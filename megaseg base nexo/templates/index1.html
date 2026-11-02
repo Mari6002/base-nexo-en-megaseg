@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MEGASEG CIA. LTDA. - Sistemas de alarma inteligentes con detección inmediata de intrusos, alertas en tiempo real al celular y monitoreo remoto en Lago Agrio (Nueva Loja).">
+
+    <title>MEGASEG CIA. LTDA. - Sistemas de Alarma y Seguridad en Lago Agrio</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- CSS del sitio -->
+    <link rel="stylesheet" href="static/css/estilo.css">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-navy sticky-top shadow-sm py-2">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2 py-1" href="#inicio">
+                <span class="brand-badge"><i class="bi bi-shield-check"></i></span>
+                <span class="text-white">MEGA<span class="text-mint">SEG</span> <small class="text-white-50 fs-6 fw-normal d-none d-sm-inline">CIA. LTDA.</small></span>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav" aria-controls="menuNav" aria-expanded="false" aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="menuNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                    <li class="nav-item">
+                        <a class="nav-link px-2 active" href="#inicio">
+                            <i class="bi bi-house-door me-1"></i>Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-2" href="#quienes-somos">
+                            <i class="bi bi-info-circle me-1"></i>Quiénes Somos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-2" href="#servicios">
+                            <i class="bi bi-shield-shaded me-1"></i>Servicios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-2" href="#video">
+                            <i class="bi bi-play-circle me-1"></i>Demostración
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-2" href="#solicitudes">
+                            <i class="bi bi-send-plus me-1"></i>Solicitudes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-2" href="#contacto">
+                            <i class="bi bi-envelope me-1"></i>Contacto
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-verde btn-sm px-3 rounded-pill fw-semibold shadow-sm" href="http://127.0.0.1:5000/servicios" target="_blank">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Acceso al Sistema
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="flex-grow-1">
+
+        <!-- Banner principal -->
+        <section id="inicio" class="hero-section text-center text-white py-5">
+            <div class="container py-lg-5">
+                <span class="badge bg-emerald px-3 py-2 text-uppercase fw-semibold mb-3">
+                    <i class="bi bi-shield-check me-1"></i>Sistemas de Alarma y Monitoreo Inteligente
+                </span>
+                <h1 class="display-4 fw-bold mb-3 text-white">
+                    Sistemas de Alarma Inteligentes y Seguridad en Lago Agrio
+                </h1>
+                <p class="lead text-light-emerald mx-auto mb-4" style="max-width: 820px;">
+                    En MEGASEG CIA. LTDA. ofrecemos sistemas de alarma inteligentes con detección inmediata de intrusos, alertas en tiempo real al celular y monitoreo remoto en Lago Agrio (Nueva Loja).
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap align-items-center">
+                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20sistemas%20de%20alarma%20y%20soluciones%20de%20seguridad%20en%20Lago%20Agrio." 
+                       target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg fw-bold shadow-sm">
+                        <i class="bi bi-whatsapp me-2"></i>Contactar por WhatsApp
+                    </a>
+                    <a href="#servicios" class="btn btn-verde btn-lg fw-bold shadow-sm">
+                        <i class="bi bi-shield-shaded me-2"></i>Ver Soluciones
+                    </a>
+                    <button type="button" class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#modalAccesoSistema">
+                        <i class="bi bi-grid-3x3-gap-fill me-2"></i>Módulos del Sistema
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quienes Somos -->
+        <section id="quienes-somos" class="py-5">
+            <div class="container py-lg-4">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-5 col-md-6">
+                        <div class="position-relative">
+                            <img src="https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=800&q=80"
+                                alt="Sistemas de seguridad MEGASEG CIA. LTDA." class="img-fluid rounded-4 shadow w-100 object-fit-cover" style="height: 390px;">
+                            <div class="position-absolute bottom-0 start-0 m-3 p-3 bg-navy text-white rounded-3 shadow-sm bg-opacity-90">
+                                <small class="d-block text-mint fw-bold"><i class="bi bi-geo-alt-fill me-1"></i>Lago Agrio (Nueva Loja)</small>
+                                <span class="small">Sistemas de alarma & monitoreo 24/7</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <article class="col-lg-7 col-md-6">
+                        <span class="badge bg-navy text-white mb-2 px-3 py-1 text-uppercase fw-semibold">Sobre nosotros</span>
+                        <h2 class="display-6 fw-bold text-navy mb-3">Quiénes Somos - MEGASEG CIA. LTDA.</h2>
+                        <p class="text-body lead">
+                            En <strong>MEGASEG CIA. LTDA.</strong> somos una empresa especializada en brindar sistemas de alarma inteligentes y soluciones avanzadas de seguridad en <strong>Lago Agrio (Nueva Loja)</strong> y la provincia de Sucumbíos.
+                        </p>
+                        <p class="text-body">
+                            Protegemos lo que más valoras: tu familia, patrimonio y negocio. Integramos tecnología de punta que proporciona <strong>detección inmediata de intrusos</strong>, <strong>alertas en tiempo real directamente al celular</strong> y capacidades de <strong>monitoreo remoto continuo</strong> desde cualquier lugar.
+                        </p>
+                        <div class="row g-3 mt-2">
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3 border-start border-4 border-emerald">
+                                    <small class="text-muted d-block fw-semibold">Ubicación</small>
+                                    <span class="fw-bold text-navy"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Calle José María Urbina y Tungurahua, Lago Agrio</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded-3 border-start border-4 border-navy">
+                                    <small class="text-muted d-block fw-semibold">Teléfonos</small>
+                                    <span class="fw-bold text-navy"><i class="bi bi-telephone-fill text-primary me-1"></i>099 140 2860 / 098 290 0705</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded-3 border-start border-4 border-emerald d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div>
+                                        <small class="text-muted d-block fw-semibold">Atención y Soporte</small>
+                                        <span class="fw-bold text-navy"><i class="bi bi-shield-check text-success me-1"></i>Monitoreo remoto 24/7 y servicio técnico en Lago Agrio</span>
+                                    </div>
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20m%C3%A1s%20informaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-whatsapp rounded-pill">
+                                        <i class="bi bi-whatsapp me-1"></i>Chat en WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mision y Vision -->
+        <section id="mision-vision" class="py-5 bg-soft">
+            <div class="container py-lg-4">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold text-navy">Misión y Visión Institucional</h2>
+                    <p class="text-muted">El compromiso de MEGASEG CIA. LTDA. con la protección y tranquilidad de la región.</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="icon-circle bg-emerald-subtle text-emerald" style="width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-shield-check fs-4"></i>
+                                </div>
+                                <h3 class="h4 fw-bold text-navy mb-0">Misión</h3>
+                            </div>
+                            <p class="text-body mb-0">
+                                Proporcionar a nuestros clientes en Lago Agrio y la región amazónica la máxima protección y tranquilidad mediante <strong>sistemas de alarma inteligentes</strong> de alta tecnología, videovigilancia y soluciones de seguridad oportunas, confiables y con soporte profesional permanente.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="icon-circle bg-navy-subtle text-navy" style="width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-eye-fill fs-4"></i>
+                                </div>
+                                <h3 class="h4 fw-bold text-navy mb-0">Visión</h3>
+                            </div>
+                            <p class="text-body mb-0">
+                                Consolidarse como la empresa líder y de mayor confianza en <strong>sistemas de seguridad electrónica, alarmas inteligentes y monitoreo remoto</strong> en la provincia de Sucumbíos y el oriente ecuatoriano, destacando por la innovación técnica, inmediatez de respuesta y compromiso comunitario.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Servicios con Buscador -->
+        <section id="servicios" class="py-5">
+            <div class="container py-lg-4">
+                <div class="text-center mb-4">
+                    <span class="badge bg-emerald-subtle text-emerald-text px-3 py-2 rounded-pill text-uppercase fw-semibold mb-2">Soluciones de Seguridad</span>
+                    <h2 class="display-6 fw-bold text-navy">Servicios y Sistemas Disponibles</h2>
+                    <p class="text-muted mx-auto" style="max-width: 680px;">
+                        Tecnología de seguridad certificada para detección oportuna de intrusiones y control perimetral en Lago Agrio. Usa el buscador para filtrar soluciones.
+                    </p>
+                </div>
+
+                <!-- Buscador y Filtros Rápidos -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white" style="border: 1px solid var(--border-color) !important;">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-7 col-lg-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">
+                                    <i class="bi bi-search text-emerald"></i>
+                                </span>
+                                <input type="text" id="buscadorIndex" class="form-control bg-light border-start-0 border-end-0 py-2"
+                                       placeholder="Buscar solución (ej. Alarma inteligente, Cámaras CCTV, Cerco, Monitoreo)..."
+                                       autocomplete="off">
+                                <button class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" type="button" id="btnLimpiarIndex" title="Borrar búsqueda">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-5 col-lg-4">
+                            <select id="categoriaIndex" class="form-select rounded-pill py-2 bg-light">
+                                <option value="">Todas las categorías</option>
+                                <option value="alarmas">Sistemas de Alarma</option>
+                                <option value="videovigilancia">Videovigilancia y CCTV</option>
+                                <option value="perimetral">Seguridad Perimetral</option>
+                                <option value="monitoreo">Monitoreo y Soporte</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Chips de acceso directo -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-2 pt-2 border-top">
+                        <small class="text-muted fw-semibold me-1"><i class="bi bi-funnel text-navy me-1"></i>Filtros:</small>
+                        <button type="button" class="btn btn-sm btn-verde rounded-pill px-3 index-chip active" data-cat="">Todos</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 index-chip" data-cat="alarmas">Alarmas Inteligentes</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 index-chip" data-cat="videovigilancia">Cámaras CCTV</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 index-chip" data-cat="perimetral">Cercos Eléctricos</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 index-chip" data-cat="monitoreo">Monitoreo Remoto</button>
+                    </div>
+                </div>
+
+                <div class="row g-4" id="contenedorServiciosIndex">
+                    <!-- Servicio 1: Alarma Inteligente -->
+                    <div class="col-lg-4 col-md-6 service-index-col"
+                         data-nombre="alarma inteligente con monitoreo movil deteccion de intrusos"
+                         data-descripcion="sistema de alarma inteligente con deteccion inmediata de intrusos alertas en tiempo real al celular y monitoreo remoto"
+                         data-categoria="alarmas">
+                        <div class="card h-100 service-card shadow-sm border-0 d-flex flex-column">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=700&q=80" alt="Alarma Inteligente">
+                                <div class="price-tag">$180.00 <span>USD</span></div>
+                            </div>
+                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                                <span class="badge badge-disponible mb-2 align-self-end"><i class="bi bi-check-circle-fill me-1"></i>Disponible</span>
+                                <span class="badge bg-light text-navy border px-2 py-1 mb-2 align-self-start"><i class="bi bi-shield-lock me-1"></i>Sistemas de Alarma</span>
+                                <h3 class="h5 fw-bold text-navy my-2">Alarma Inteligente con Monitoreo Móvil</h3>
+                                <p class="text-body small flex-grow-1 mb-3">Detección inmediata de intrusos con sensores de movimiento y apertura, alertas instantáneas en tu smartphone y activación remota.</p>
+                                <div class="pt-3 border-top mt-auto">
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20cotizar%20el%20Sistema%20de%20Alarma%20Inteligente" target="_blank" rel="noopener noreferrer" class="btn btn-verde btn-sm rounded-pill w-100">
+                                        <i class="bi bi-whatsapp me-1"></i>Cotizar por WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio 2: Cámaras CCTV -->
+                    <div class="col-lg-4 col-md-6 service-index-col"
+                         data-nombre="kit de camaras de seguridad hd 4k videovigilancia cctv"
+                         data-descripcion="camaras de vigilancia ip de alta definicion con vision nocturna deteccion de movimiento y acceso remoto 24/7"
+                         data-categoria="videovigilancia">
+                        <div class="card h-100 service-card shadow-sm border-0 d-flex flex-column">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=700&q=80" alt="Cámaras de Seguridad CCTV">
+                                <div class="price-tag">$220.00 <span>USD</span></div>
+                            </div>
+                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                                <span class="badge badge-disponible mb-2 align-self-end"><i class="bi bi-check-circle-fill me-1"></i>Disponible</span>
+                                <span class="badge bg-light text-navy border px-2 py-1 mb-2 align-self-start"><i class="bi bi-camera-video me-1"></i>Videovigilancia CCTV</span>
+                                <h3 class="h5 fw-bold text-navy my-2">Kit de Cámaras de Seguridad HD / 4K</h3>
+                                <p class="text-body small flex-grow-1 mb-3">Cámaras IP para interiores y exteriores con visión nocturna infrarroja, detección de movimiento y visualización en vivo desde celular.</p>
+                                <div class="pt-3 border-top mt-auto">
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20cotizar%20el%20Kit%20de%20Cámaras%20de%20Seguridad" target="_blank" rel="noopener noreferrer" class="btn btn-verde btn-sm rounded-pill w-100">
+                                        <i class="bi bi-whatsapp me-1"></i>Cotizar por WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio 3: Cercos Eléctricos -->
+                    <div class="col-lg-4 col-md-6 service-index-col"
+                         data-nombre="cerco electrico y proteccion perimetral"
+                         data-descripcion="proteccion perimetral disuasiva de alta seguridad para residencias comercios e industrias con sensor de corte"
+                         data-categoria="perimetral">
+                        <div class="card h-100 service-card shadow-sm border-0 d-flex flex-column">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&w=700&q=80" alt="Cerco Eléctrico">
+                                <div class="price-tag">$150.00 <span>USD</span></div>
+                            </div>
+                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                                <span class="badge badge-disponible mb-2 align-self-end"><i class="bi bi-check-circle-fill me-1"></i>Disponible</span>
+                                <span class="badge bg-light text-navy border px-2 py-1 mb-2 align-self-start"><i class="bi bi-lightning-charge me-1"></i>Seguridad Perimetral</span>
+                                <h3 class="h5 fw-bold text-navy my-2">Cerco Eléctrico y Seguridad Perimetral</h3>
+                                <p class="text-body small flex-grow-1 mb-3">Barrera perimetral electrificada disuasiva con sensor de corte de alambre, batería de respaldo y sirena de aviso inmediato.</p>
+                                <div class="pt-3 border-top mt-auto">
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20cotizar%20un%20Cerco%20Eléctrico" target="_blank" rel="noopener noreferrer" class="btn btn-verde btn-sm rounded-pill w-100">
+                                        <i class="bi bi-whatsapp me-1"></i>Cotizar por WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio 4: Monitoreo Remoto -->
+                    <div class="col-lg-4 col-md-6 service-index-col"
+                         data-nombre="monitoreo remoto 24/7 y alertas al celular"
+                         data-descripcion="servicio de enlace y monitoreo continuo para sistemas de alarma con respuesta inmediata ante emergencias"
+                         data-categoria="monitoreo">
+                        <div class="card h-100 service-card shadow-sm border-0 d-flex flex-column">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=700&q=80" alt="Monitoreo Remoto 24/7">
+                                <div class="price-tag">$45.00 <span>USD/mes</span></div>
+                            </div>
+                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                                <span class="badge badge-disponible mb-2 align-self-end"><i class="bi bi-check-circle-fill me-1"></i>Disponible</span>
+                                <span class="badge bg-light text-navy border px-2 py-1 mb-2 align-self-start"><i class="bi bi-broadcast me-1"></i>Monitoreo y Soporte</span>
+                                <h3 class="h5 fw-bold text-navy my-2">Monitoreo Remoto 24/7 con Alertas</h3>
+                                <p class="text-body small flex-grow-1 mb-3">Supervisión continua de tu sistema de alarma en Lago Agrio con llamadas y notificaciones de emergencia en caso de intrusión.</p>
+                                <div class="pt-3 border-top mt-auto">
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20cotizar%20el%20servicio%20de%20Monitoreo%20Remoto" target="_blank" rel="noopener noreferrer" class="btn btn-verde btn-sm rounded-pill w-100">
+                                        <i class="bi bi-whatsapp me-1"></i>Cotizar por WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio 5: Control de Acceso -->
+                    <div class="col-lg-4 col-md-6 service-index-col"
+                         data-nombre="control de acceso biometrico cerraduras inteligentes"
+                         data-descripcion="sistemas de control de entrada para residencias oficinas y locales comerciales con huella rfid y clave"
+                         data-categoria="alarmas">
+                        <div class="card h-100 service-card shadow-sm border-0 d-flex flex-column">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=700&q=80" alt="Control de Acceso">
+                                <div class="price-tag">$130.00 <span>USD</span></div>
+                            </div>
+                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                                <span class="badge badge-disponible mb-2 align-self-end"><i class="bi bi-check-circle-fill me-1"></i>Disponible</span>
+                                <span class="badge bg-light text-navy border px-2 py-1 mb-2 align-self-start"><i class="bi bi-key-fill me-1"></i>Control de Acceso</span>
+                                <h3 class="h5 fw-bold text-navy my-2">Cerraduras y Control de Acceso Digital</h3>
+                                <p class="text-body small flex-grow-1 mb-3">Acceso mediante huella dactilar, tarjeta de proximidad RFID y código PIN para condominios, comercios y hogares.</p>
+                                <div class="pt-3 border-top mt-auto">
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20cotizar%20Control%20de%20Acceso" target="_blank" rel="noopener noreferrer" class="btn btn-verde btn-sm rounded-pill w-100">
+                                        <i class="bi bi-whatsapp me-1"></i>Cotizar por WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio 6: Mantenimiento Preventivo -->
+                    <div class="col-lg-4 col-md-6 service-index-col"
+                         data-nombre="mantenimiento preventivo de alarmas y cctv"
+                         data-descripcion="revision tecnica calibracion de sensores cambio de baterias y pruebas de conectividad de alarmas"
+                         data-categoria="monitoreo">
+                        <div class="card h-100 service-card shadow-sm border-0 d-flex flex-column">
+                            <div class="card-img-wrapper">
+                                <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80" alt="Mantenimiento de Seguridad">
+                                <div class="price-tag">$60.00 <span>USD</span></div>
+                            </div>
+                            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                                <span class="badge badge-disponible mb-2 align-self-end"><i class="bi bi-check-circle-fill me-1"></i>Disponible</span>
+                                <span class="badge bg-light text-navy border px-2 py-1 mb-2 align-self-start"><i class="bi bi-tools me-1"></i>Soporte Técnico</span>
+                                <h3 class="h5 fw-bold text-navy my-2">Mantenimiento de Alarmas y CCTV</h3>
+                                <p class="text-body small flex-grow-1 mb-3">Inspección técnica de cableado, cambio de baterías de respaldo, calibración de sensores y pruebas de conectividad.</p>
+                                <div class="pt-3 border-top mt-auto">
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20solicitar%20Mantenimiento%20Técnico" target="_blank" rel="noopener noreferrer" class="btn btn-verde btn-sm rounded-pill w-100">
+                                        <i class="bi bi-whatsapp me-1"></i>Cotizar por WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estado vacío cuando no hay coincidencias en la búsqueda -->
+                <div id="sinResultadosIndex" class="empty-state text-center border rounded-4 p-5 d-none mt-4">
+                    <i class="bi bi-search text-muted fs-1"></i>
+                    <h4 class="h5 text-navy mt-3">No encontramos soluciones con ese término</h4>
+                    <p class="text-muted mb-3">Intenta con "alarma", "cámaras", "cerco" o "monitoreo".</p>
+                    <button type="button" class="btn btn-sm btn-verde rounded-pill px-3" id="btnRestablecerIndex">
+                        Ver todas las soluciones
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demostración en Video -->
+        <section id="video" class="py-5 bg-soft">
+            <div class="container py-lg-4">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-navy">Seguridad y Monitoreo Inteligente en Acción</h2>
+                    <p class="text-muted">Descubre cómo los sistemas de alarma inteligentes protegen tu propiedad en tiempo real.</p>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-9">
+                        <div class="ratio ratio-16x9 shadow rounded-4 overflow-hidden border">
+                            <iframe src="https://www.youtube.com/embed/a3ICNMQW7Ok" title="Sistemas de seguridad y alarmas inteligentes"
+                                allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Asesoría Técnica Sin Costo -->
+        <section class="py-4">
+            <div class="container">
+                <aside class="p-4 p-lg-5 rounded-4 shadow-sm promo-aside">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-7">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-emerald fs-1">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 fw-bold text-navy mb-1">Evaluación de Seguridad Sin Compromiso en Lago Agrio</h3>
+                                    <p class="text-body mb-0 small">Visitamos tus instalaciones en Lago Agrio para analizar vulnerabilidades y diseñar una propuesta a tu medida.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5 text-md-end">
+                            <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20agendar%20una%20evaluaci%C3%B3n%20de%20seguridad" 
+                               target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp fw-bold px-4 py-2 rounded-pill shadow-sm">
+                                <i class="bi bi-whatsapp me-2"></i>Solicitar Asesoría Gratuita
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- Contacto Directo y Formulario -->
+        <section id="contacto" class="py-5">
+            <div class="container py-lg-4">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold text-navy">Contáctanos en Lago Agrio</h2>
+                    <p class="text-muted">Estamos listos para asesorarte y brindarte la mejor solución de seguridad.</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <form id="contactoForm" method="post" class="p-4 p-md-5 rounded-4 shadow-sm bg-white border" novalidate>
+                            <h3 class="h5 fw-bold text-navy mb-4 border-bottom pb-2">
+                                <i class="bi bi-envelope-fill text-emerald me-2"></i>Envíanos un mensaje
+                            </h3>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="nombre" class="form-label fw-semibold text-navy small">Nombre completo</label>
+                                    <input type="text" id="nombre" name="nombre" class="form-control"
+                                        placeholder="Tu nombre" minlength="3" required>
+                                    <div class="invalid-feedback">Ingresa solo letras (mínimo 3 caracteres).</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="correo" class="form-label fw-semibold text-navy small">Correo electrónico</label>
+                                    <input type="email" id="correo" name="correo" class="form-control"
+                                        placeholder="correo@ejemplo.com" required>
+                                    <div class="invalid-feedback">Ingresa un correo electrónico válido.</div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="asunto" class="form-label fw-semibold text-navy small">Asunto</label>
+                                    <input type="text" id="asunto" name="asunto" class="form-control"
+                                        placeholder="Ej: Cotización de alarma para mi negocio" minlength="5" required>
+                                    <div class="invalid-feedback">El asunto debe tener al menos 5 caracteres.</div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="mensaje" class="form-label fw-semibold text-navy small">Mensaje</label>
+                                    <textarea id="mensaje" name="mensaje" class="form-control" rows="4"
+                                        placeholder="Cuéntanos sobre el tipo de propiedad y las necesidades de seguridad..." minlength="10" required></textarea>
+                                    <div class="invalid-feedback">El mensaje debe tener al menos 10 caracteres.</div>
+                                </div>
+
+                                <div class="col-12 pt-2">
+                                    <button type="submit" class="btn btn-verde btn-lg w-100">
+                                        <i class="bi bi-send me-2"></i>Enviar Consulta de Seguridad
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="modal fade" id="statusSuccessModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content rounded-4 border-0 text-center p-4">
+                                    <div class="modal-body p-0">
+                                        <div class="text-success mb-3" style="font-size: 3rem;">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
+                                        <h4 class="text-navy fw-bold">¡Mensaje Enviado!</h4>
+                                        <p class="text-muted small">Tu requerimiento fue registrado. Nos pondremos en contacto contigo pronto.</p>
+                                        <button type="button" class="btn btn-verde btn-sm w-100 mt-2" data-bs-dismiss="modal">Aceptar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="statusErrorsModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content rounded-4 border-0 text-center p-4">
+                                    <div class="modal-body p-0">
+                                        <div class="text-danger mb-3" style="font-size: 3rem;">
+                                            <i class="bi bi-exclamation-octagon-fill"></i>
+                                        </div>
+                                        <h4 class="text-danger fw-bold">Campos Incompletos</h4>
+                                        <p class="text-muted small">Por favor completa los campos requeridos antes de enviar.</p>
+                                        <button type="button" class="btn btn-danger btn-sm w-100 mt-2" data-bs-dismiss="modal">Entendido</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="p-4 p-md-5 rounded-4 shadow-sm bg-white border h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <h3 class="h5 fw-bold text-navy mb-4 border-bottom pb-2">
+                                    <i class="bi bi-shield-check text-emerald me-2"></i>MEGASEG CIA. LTDA.
+                                </h3>
+                                
+                                <div class="d-flex flex-column gap-3 mb-4">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="contact-icon-box text-emerald bg-emerald-subtle" style="width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                        </div>
+                                        <div>
+                                            <span class="d-block small text-muted">Dirección</span>
+                                            <span class="fw-bold text-navy">Calle José María Urbina y Tungurahua</span>
+                                            <small class="text-muted d-block">Lago Agrio (Nueva Loja), Sucumbíos</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="contact-icon-box text-emerald bg-emerald-subtle" style="width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                            <i class="bi bi-telephone-fill"></i>
+                                        </div>
+                                        <div>
+                                            <span class="d-block small text-muted">Teléfonos</span>
+                                            <span class="fw-bold text-navy d-block">099 140 2860</span>
+                                            <span class="fw-bold text-navy d-block">098 290 0705</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="contact-icon-box text-emerald bg-emerald-subtle" style="width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </div>
+                                        <div>
+                                            <span class="d-block small text-muted">WhatsApp Principal</span>
+                                            <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20informaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="fw-bold text-emerald text-decoration-none">
+                                                +593 99 140 2860 (Chat Directo)
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="h6 fw-bold text-navy mb-3">Canales Oficiales</h4>
+                                <div class="d-grid gap-2">
+                                    <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm text-start ps-3 py-2 fw-semibold">
+                                        <i class="bi bi-facebook me-2 fs-6"></i>MEGASEG CIA. LTDA. en Facebook
+                                    </a>
+                                    <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20informaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-sm text-start ps-3 py-2 fw-semibold">
+                                        <i class="bi bi-whatsapp me-2 fs-6"></i>WhatsApp: 099 140 2860
+                                    </a>
+                                    <a href="https://wa.me/593982900705?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20informaci%C3%B3n" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success btn-sm text-start ps-3 py-2 fw-semibold">
+                                        <i class="bi bi-whatsapp me-2 fs-6"></i>WhatsApp: 098 290 0705
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pilares Tecnológicos -->
+        <section id="herramientas" class="py-5 bg-soft">
+            <div class="container py-lg-4">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold text-navy">Pilares de Protección MEGASEG</h2>
+                    <p class="text-muted">Tecnología diseñada para disuadir, detectar y responder de forma oportuna.</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 text-center p-4">
+                            <div class="text-primary mb-3">
+                                <i class="bi bi-broadcast fs-1"></i>
+                            </div>
+                            <h3 class="h5 fw-bold text-navy">Detección Inmediata</h3>
+                            <p class="text-body small mb-0">Sensores infrarrojos de intrusión, ruptura de vidrios y apertura perimetral de respuesta instantánea.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 text-center p-4">
+                            <div class="text-emerald mb-3">
+                                <i class="bi bi-phone-vibrate fs-1"></i>
+                            </div>
+                            <h3 class="h5 fw-bold text-navy">Alertas en Tiempo Real</h3>
+                            <p class="text-body small mb-0">Notificaciones automáticas directo a tu celular para que siempre sepas qué ocurre en tu propiedad.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 rounded-4 text-center p-4">
+                            <div class="text-danger mb-3">
+                                <i class="bi bi-shield-lock-fill fs-1"></i>
+                            </div>
+                            <h3 class="h5 fw-bold text-navy">Monitoreo Remoto</h3>
+                            <p class="text-body small mb-0">Control total y vigilancia continua 24/7 con soporte técnico local disponible en Lago Agrio.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solicitudes -->
+        <section id="solicitudes" class="py-5 bg-white">
+            <div class="container py-lg-4">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold text-navy">Registro Rápido de Solicitudes de Seguridad</h2>
+                    <p class="text-muted">Indícanos los requerimientos de tu propiedad y nuestro equipo técnico te contactará con una solución personalizada.</p>
+                </div>
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <form id="formSolicitud" class="card p-4 p-md-5 shadow-sm border-0 rounded-4 mb-4" novalidate>
+                            <h3 class="h5 fw-bold text-navy mb-3">
+                                <i class="bi bi-shield-plus text-emerald me-2"></i>Nueva Solicitud de Seguridad
+                            </h3>
+
+                            <div class="mb-3">
+                                <label for="nombreCliente" class="form-label fw-semibold text-navy small">Nombre del cliente o negocio</label>
+                                <input type="text" id="nombreCliente" class="form-control" placeholder="Ej: Carlos Mendoza" minlength="4" maxlength="150" autocomplete="name" required>
+                                <div class="invalid-feedback">Ingresa mínimo 4 letras, sin números.</div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="correoSolicitud" class="form-label fw-semibold text-navy small">Correo electrónico</label>
+                                    <input type="email" id="correoSolicitud" class="form-control" placeholder="tu@correo.com" maxlength="150" autocomplete="email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="telefonoSolicitud" class="form-label fw-semibold text-navy small">Teléfono / Celular (opcional)</label>
+                                    <input type="tel" id="telefonoSolicitud" class="form-control" placeholder="0991402860" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" autocomplete="tel">
+                                    <div class="invalid-feedback">Escribe exactamente 10 números o déjalo vacío.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="tipoServicio" class="form-label fw-semibold text-navy small">Solución requerida</label>
+                                <select id="tipoServicio" class="form-select" required>
+                                    <option value="">Seleccione una solución de seguridad...</option>
+                                    <option value="Sistemas de Alarma Inteligentes">Sistemas de Alarma Inteligentes (Detección Inmediata)</option>
+                                    <option value="Monitoreo Remoto y Alertas Móviles">Monitoreo Remoto y Alertas al Celular</option>
+                                    <option value="Cámaras de Seguridad CCTV">Cámaras de Seguridad y CCTV (HD / 4K)</option>
+                                    <option value="Cercos Eléctricos Perimetrales">Cercos Eléctricos Perimetrales</option>
+                                    <option value="Control de Acceso Digital">Control de Acceso y Cerraduras Digitales</option>
+                                    <option value="Mantenimiento de Seguridad">Mantenimiento y Soporte Técnico</option>
+                                </select>
+                                <div class="invalid-feedback">Selecciona una opción.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descripcionSolicitud" class="form-label fw-semibold text-navy small">Detalles de la propiedad y necesidades</label>
+                                <textarea id="descripcionSolicitud" class="form-control" rows="3" maxlength="5000" placeholder="Describe el tipo de inmueble, ubicación en Lago Agrio y requerimientos..." minlength="10" required></textarea>
+                                <div class="invalid-feedback">Mínimo 10 caracteres.</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-verde btn-lg">
+                                <i class="bi bi-shield-check me-2"></i>Registrar Solicitud
+                            </button>
+                        </form>
+
+                        <div id="spinnerCarga" class="text-center d-none my-4">
+                            <div class="spinner-border text-emerald" role="status">
+                                <span class="visually-hidden">Guardando...</span>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="solicitudSuccessModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content rounded-4 border-0 text-center p-4">
+                                    <div class="modal-body p-0">
+                                        <div class="text-success mb-3" style="font-size: 3rem;">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
+                                        <h4 class="text-navy fw-bold">¡Solicitud Guardada!</h4>
+                                        <p class="text-muted small">Tu solicitud fue guardada correctamente. Nuestro equipo técnico en Lago Agrio la revisará.</p>
+                                        <button type="button" class="btn btn-verde btn-sm w-100 mt-2" data-bs-dismiss="modal">Aceptar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="solicitudErrorModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-sm">
+                                <div class="modal-content rounded-4 border-0 text-center p-4">
+                                    <div class="modal-body p-0">
+                                        <div class="text-danger mb-3" style="font-size: 3rem;">
+                                            <i class="bi bi-exclamation-octagon-fill"></i>
+                                        </div>
+                                        <h4 class="text-danger fw-bold">Campos Incompletos</h4>
+                                        <p id="solicitudErrorMensaje" class="text-muted small">Por favor revisa los campos antes de guardar.</p>
+                                        <button type="button" class="btn btn-danger btn-sm w-100 mt-2" data-bs-dismiss="modal">Aceptar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pie de página -->
+    <footer class="footer-custom mt-auto text-white">
+        <div class="container py-5">
+            <div class="row g-4 justify-content-between align-items-center">
+                <div class="col-lg-6 text-center text-lg-start">
+                    <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-2 mb-2">
+                        <span class="brand-badge"><i class="bi bi-shield-check"></i></span>
+                        <span class="h5 mb-0 fw-bold">MEGA<span class="text-mint">SEG</span> <small class="text-white-50 fs-6">CIA. LTDA.</small></span>
+                    </div>
+                    <p class="text-light-muted mb-0 small">
+                        Sistemas de alarma inteligentes con detección inmediata de intrusos, alertas en tiempo real al celular y monitoreo remoto en Lago Agrio (Nueva Loja).
+                    </p>
+                    <p class="text-light-muted small mt-2 mb-0">
+                        <i class="bi bi-geo-alt me-1 text-mint"></i>Calle José María Urbina y Tungurahua, Lago Agrio - Sucumbíos
+                    </p>
+                    <p class="text-light-muted small mt-1 mb-0">
+                        <i class="bi bi-telephone me-1 text-mint"></i>099 140 2860 / 098 290 0705 | 
+                        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" class="text-info text-decoration-none ms-1">
+                            <i class="bi bi-facebook me-1"></i>MEGASEG CIA. LTDA. en Facebook
+                        </a>
+                    </p>
+                </div>
+
+                <div class="col-lg-5 text-center text-lg-end">
+                    <div class="credits-box p-3 rounded-3 bg-navy-light d-inline-block text-start">
+                        <p class="mb-1 small fw-semibold text-mint">
+                            <i class="bi bi-shield-fill-check me-1"></i>Seguridad Electrónica Integral
+                        </p>
+                        <p class="mb-1 small text-light-muted">
+                            <strong>Especialidad:</strong> Alarmas inteligentes, Cámaras CCTV y Monitoreo Remoto.
+                        </p>
+                        <p class="mb-0 small text-light-muted">
+                            <strong>Atención Técnica:</strong> Lago Agrio y provincia de Sucumbíos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-top border-secondary-subtle mt-4 pt-3 text-center small text-light-muted">
+                <p class="mb-0">© 2026 MEGASEG CIA. LTDA. — Sistemas de Alarma y Seguridad. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- BOTÓN FLOTANTE DE WHATSAPP -->
+    <div class="whatsapp-float-container" id="whatsappFloat">
+        <div class="whatsapp-badge-msg shadow-sm d-none d-md-flex">
+            <span class="status-dot"></span>
+            <span>¿Deseas proteger tu propiedad? ¡Escríbenos!</span>
+        </div>
+        <a href="https://wa.me/593991402860?text=Hola%20MEGASEG%20CIA.%20LTDA.,%20deseo%20m%C3%A1s%20informaci%C3%B3n%20sobre%20sus%20sistemas%20de%20alarma%20y%20soluciones%20de%20seguridad%20en%20Lago%20Agrio."
+           class="whatsapp-float-btn"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="Contactar por WhatsApp a MEGASEG CIA. LTDA."
+           title="Contactar a MEGASEG CIA. LTDA. por WhatsApp (099 140 2860 / 098 290 0705)">
+            <span class="whatsapp-pulse"></span>
+            <i class="bi bi-whatsapp"></i>
+        </a>
+    </div>
+
+    <!-- Modal de acceso al sistema -->
+    <div class="modal fade" id="modalAccesoSistema" tabindex="-1" aria-labelledby="modalAccesoSistemaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-navy text-white p-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="brand-badge"><i class="bi bi-shield-check"></i></span>
+                        <div>
+                            <h4 class="modal-title h5 fw-bold mb-0 text-white" id="modalAccesoSistemaLabel">Panel de Gestión - MEGASEG CIA. LTDA.</h4>
+                            <small class="text-light-emerald">Selecciona el módulo administrativo</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body p-4 p-md-5">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="http://127.0.0.1:5000/servicios" target="_blank" class="card h-100 p-4 border rounded-4 text-decoration-none shadow-sm service-shortcut-card">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="service-icon-box bg-emerald-subtle text-emerald">
+                                        <i class="bi bi-shield-shaded fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-navy mb-0">Catálogo de Soluciones</h5>
+                                        <span class="badge bg-emerald text-white small">Precios y Equipos</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mb-0 mt-2">Gestiona servicios de alarmas, cámaras, cercos y contratos de monitoreo.</p>
+                            </a>
+                        </div>
+
+                        <div class="col-md-6">
+                            <a href="http://127.0.0.1:5000/facturacion" target="_blank" class="card h-100 p-4 border rounded-4 text-decoration-none shadow-sm service-shortcut-card">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="service-icon-box bg-navy text-white">
+                                        <i class="bi bi-calculator-fill fs-4 text-mint"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-navy mb-0">Facturas y Cotizaciones</h5>
+                                        <span class="badge bg-navy text-white small">Cotizaciones y Cobros</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mb-0 mt-2">Emisión de cotizaciones comerciales para proyectos de seguridad y facturas de venta.</p>
+                            </a>
+                        </div>
+
+                        <div class="col-md-6">
+                            <a href="http://127.0.0.1:5000/clientes" target="_blank" class="card h-100 p-4 border rounded-4 text-decoration-none shadow-sm service-shortcut-card">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="service-icon-box bg-primary-subtle text-primary">
+                                        <i class="bi bi-people-fill fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-navy mb-0">Clientes y Contratos</h5>
+                                        <span class="badge bg-primary text-white small">Directorio</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mb-0 mt-2">Registro de clientes, propietarios y locales monitoreados en Lago Agrio.</p>
+                            </a>
+                        </div>
+
+                        <div class="col-md-6">
+                            <a href="http://127.0.0.1:5000/proveedores" target="_blank" class="card h-100 p-4 border rounded-4 text-decoration-none shadow-sm service-shortcut-card">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="service-icon-box bg-warning-subtle text-warning">
+                                        <i class="bi bi-truck fs-4 text-dark"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-navy mb-0">Proveedores de Seguridad</h5>
+                                        <span class="badge bg-warning text-dark small">Equipos y Sensores</span>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mb-0 mt-2">Gestión de proveedores de hardware de seguridad, paneles y sistemas de CCTV.</p>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded-3 border text-center">
+                        <small class="text-muted d-block mb-1">
+                            <i class="bi bi-info-circle text-primary me-1"></i>Para interactuar con el servidor local de la aplicación:
+                        </small>
+                        <code class="text-navy fw-bold">python app.py</code>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                    <a href="http://127.0.0.1:5000/servicios" target="_blank" class="btn btn-verde btn-sm px-4">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Entrar al Sistema
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JS personalizado -->
+    <script src="static/js/contacto.js"></script>
+    <script src="static/js/script.js?v=20260923"></script>
+</body>
+
+</html>

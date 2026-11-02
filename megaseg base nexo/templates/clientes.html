@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block titulo %}Clientes - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: CARTERA DE CLIENTES
+     ============================================================================== -->
+<section class="page-header py-5 text-white">
+    <div class="container text-center">
+        <span class="badge bg-emerald mb-2 px-3 py-2 text-uppercase fw-semibold tracking-wider">Cartera Comercial</span>
+        <h1 class="display-5 fw-bold mb-3">Nuestros Clientes</h1>
+        <p class="lead text-light-emerald mx-auto mb-4" style="max-width: 650px;">
+            Negocios, comercios locales y emprendedores que impulsan sus ventas con nuestras soluciones digitales.
+        </p>
+        <div>
+            <a href="{{ url_for('nuevo_cliente') }}" class="btn btn-verde btn-lg shadow-sm">
+                <i class="bi bi-person-plus me-2"></i>Registrar nuevo cliente
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     TABLA DE CLIENTES
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-white p-4 border-bottom">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <h2 class="h4 fw-bold text-navy mb-1">Directorio de Clientes</h2>
+                        <p class="text-muted small mb-0">Gestión de emprendimientos y servicios contratados</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-navy text-white px-3 py-2 rounded-pill">
+                            <i class="bi bi-people me-1"></i>{{ clientes|length }} Registrados
+                        </span>
+                        <a href="{{ url_for('nuevo_cliente') }}" class="btn btn-outline-brand btn-sm">
+                            <i class="bi bi-plus-lg me-1"></i>Nuevo Cliente
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Buscador de Clientes -->
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">
+                                <i class="bi bi-search text-emerald"></i>
+                            </span>
+                            <input type="text" id="buscadorClientes" class="form-control table-filter-control bg-light border-start-0 border-end-0 py-2"
+                                   data-filter-target=".fila-cliente" data-filter-count="#contadorClientesVisibles" data-filter-clear="#btnLimpiarClientes"
+                                   placeholder="Buscar por cédula, nombre, tipo de negocio o ciudad..."
+                                   autocomplete="off">
+                            <button class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" type="button" id="btnLimpiarClientes" title="Borrar búsqueda">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-6 text-md-end">
+                        <small class="text-muted">
+                            Mostrando <strong id="contadorClientesVisibles" class="text-navy">{{ clientes|length }}</strong> de {{ clientes|length }} clientes
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                {% if clientes %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-table">
+                        <thead class="table-navy text-white">
+                            <tr>
+                                <th class="ps-4 py-3">Cédula</th>
+                                <th class="py-3">Cliente / Empresa</th>
+                                <th class="py-3">Tipo de Negocio</th>
+                                <th class="py-3">Contacto</th>
+                                <th class="py-3">Ciudad</th>
+                                <th class="py-3 text-center pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaClientes">
+                            {% for cliente in clientes %}
+                            <tr class="fila-cliente"
+                                data-cedula="{{ (cliente.cedula or '')|lower }}"
+                                data-nombre="{{ (cliente.nombre or '')|lower }}"
+                                data-negocio="{{ (cliente.negocio_nombre or '')|lower }}"
+                                data-ciudad="{{ (cliente.ciudad or '')|lower }}"
+                                data-correo="{{ (cliente.correo or '')|lower }}"
+                                data-telefono="{{ (cliente.telefono or '')|lower }}">
+                                <td class="ps-4 py-3">
+                                    <span class="fw-bold text-navy font-monospace">{{ cliente.cedula }}</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="avatar-circle">
+                                            <i class="bi bi-building"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-navy d-block">{{ cliente.nombre }}</span>
+                                            <small class="text-muted">Cliente verificado</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge bg-light text-navy border px-2 py-1">
+                                        <i class="bi bi-tag me-1"></i>{{ cliente.negocio_nombre }}
+                                    </span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="d-block small"><i class="bi bi-telephone text-emerald me-1"></i>{{ cliente.telefono }}</span>
+                                    <span class="d-block small text-muted"><i class="bi bi-envelope me-1"></i>{{ cliente.correo }}</span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="text-muted">
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ cliente.ciudad }}
+                                    </span>
+                                </td>
+                                <td class="py-3 text-center pe-4">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{{ url_for('editar_cliente', cedula=cliente.cedula) }}" class="btn btn-outline-primary btn-sm rounded-pill" title="Editar cliente">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('eliminar_cliente', cedula=cliente.cedula) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a &quot;{{ cliente.nombre }}&quot;?');" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" title="Eliminar cliente">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación de Clientes (10 por página) -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 border-top mt-3" id="contenedorPaginacionClientes">
+                    <small class="text-muted">
+                        Mostrando <span id="contadorPaginacionClientesTexto" class="fw-semibold text-navy">1 - {{ 10 if clientes|length > 10 else clientes|length }}</span> de <span id="totalClientesPaginacion" class="fw-semibold text-navy">{{ clientes|length }}</span> clientes
+                    </small>
+                    <nav aria-label="Navegación de clientes">
+                        <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionClientes">
+                            <!-- Botones generados dinámicamente -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Estado sin resultados de búsqueda -->
+                <div id="sinResultadosClientes" class="p-5 text-center d-none">
+                    <div class="mb-3">
+                        <i class="bi bi-search text-emerald" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-navy mb-1">No se encontraron clientes</h5>
+                    <p class="text-muted small mb-3">No hay clientes que coincidan con el término ingresado.</p>
+                    <button type="button" id="btnRestablecerClientes" class="btn btn-outline-brand btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar búsqueda
+                    </button>
+                </div>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="text-navy fw-bold">No existen clientes registrados</h4>
+                    <p class="text-muted">Registra los primeros negocios asociados para comenzar.</p>
+                    <a href="{{ url_for('nuevo_cliente') }}" class="btn btn-verde mt-2">
+                        <i class="bi bi-person-plus me-1"></i>Registrar Primer Cliente
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("buscadorClientes");
+    const btnLimpiar = document.getElementById("btnLimpiarClientes");
+    const btnReset = document.getElementById("btnRestablecerClientes");
+    const todasLasFilas = Array.from(document.querySelectorAll(".fila-cliente"));
+    const sinRes = document.getElementById("sinResultadosClientes");
+    const contador = document.getElementById("contadorClientesVisibles");
+    const contadorPaginacionTexto = document.getElementById("contadorPaginacionClientesTexto");
+    const totalClientesPaginacion = document.getElementById("totalClientesPaginacion");
+    const listaBotones = document.getElementById("listaBotonesPaginacionClientes");
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionClientes");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let paginaActual = 1;
+    let filasFiltradas = [...todasLasFilas];
+
+    if (!todasLasFilas.length) return;
+
+    function normalizar(t) {
+        return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    function filtrarYPaginar(irAPagina = 1) {
+        const q = normalizar(input ? input.value : "");
+
+        filasFiltradas = todasLasFilas.filter(fila => {
+            const cedula = normalizar(fila.dataset.cedula);
+            const nombre = normalizar(fila.dataset.nombre);
+            const negocio = normalizar(fila.dataset.negocio);
+            const ciudad = normalizar(fila.dataset.ciudad);
+            const correo = normalizar(fila.dataset.correo);
+            const telf = normalizar(fila.dataset.telefono);
+            return !q || cedula.includes(q) || nombre.includes(q) || negocio.includes(q) || ciudad.includes(q) || correo.includes(q) || telf.includes(q);
+        });
+
+        const totalRegistros = filasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalRegistros / REGISTROS_POR_PAGINA));
+        paginaActual = Math.min(Math.max(1, irAPagina), totalPaginas);
+
+        todasLasFilas.forEach(f => f.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
+
+        for (let i = inicio; i < fin; i++) {
+            filasFiltradas[i].classList.remove("d-none");
+        }
+
+        if (contador) contador.textContent = totalRegistros;
+        if (totalClientesPaginacion) totalClientesPaginacion.textContent = totalRegistros;
+        if (contadorPaginacionTexto) {
+            contadorPaginacionTexto.textContent = totalRegistros > 0 ? `${inicio + 1} - ${fin}` : "0 - 0";
+        }
+        if (sinRes) sinRes.classList.toggle("d-none", totalRegistros > 0);
+        if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", totalRegistros === 0);
+
+        renderizarBotones(totalPaginas);
+    }
+
+    function renderizarBotones(totalPaginas) {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        if (totalPaginas <= 1) {
+            if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", filasFiltradas.length <= 10);
+            return;
+        }
+        if (contenedorPaginacion) contenedorPaginacion.classList.remove("d-none");
+
+        const crearItem = (texto, pag, activo = false, deshabilitado = false) => {
+            const li = document.createElement("li");
+            li.className = `page-item ${activo ? 'active' : ''} ${deshabilitado ? 'disabled' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${texto}</button>`;
+            if (!deshabilitado && !activo) {
+                li.addEventListener("click", () => filtrarYPaginar(pag));
+            }
+            return li;
+        };
+
+        // Anterior
+        listaBotones.appendChild(crearItem("&laquo; Anterior", paginaActual - 1, false, paginaActual === 1));
+
+        if (totalPaginas <= 7) {
+            for (let p = 1; p <= totalPaginas; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+        } else {
+            listaBotones.appendChild(crearItem(1, 1, paginaActual === 1));
+
+            let start = Math.max(2, paginaActual - 1);
+            let end = Math.min(totalPaginas - 1, paginaActual + 1);
+
+            if (start > 2) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            for (let p = start; p <= end; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+
+            if (end < totalPaginas - 1) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            listaBotones.appendChild(crearItem(totalPaginas, totalPaginas, paginaActual === totalPaginas));
+        }
+
+        // Siguiente
+        listaBotones.appendChild(crearItem("Siguiente &raquo;", paginaActual + 1, false, paginaActual === totalPaginas));
+    }
+
+    if (input) input.addEventListener("input", () => filtrarYPaginar(1));
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener("click", () => {
+            if (input) input.value = "";
+            filtrarYPaginar(1);
+            if (input) input.focus();
+        });
+    }
+
+    if (btnReset) {
+        btnReset.addEventListener("click", () => {
+            if (input) input.value = "";
+            filtrarYPaginar(1);
+            if (input) input.focus();
+        });
+    }
+
+    filtrarYPaginar(1);
+});
+</script>
+{% endblock %}

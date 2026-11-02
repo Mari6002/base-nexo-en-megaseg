@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block titulo %}Servicios de Seguridad - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: CATÁLOGO DE SERVICIOS
+     ============================================================================== -->
+<section class="page-header py-5 text-white">
+    <div class="container text-center">
+        <span class="badge bg-emerald mb-2 px-3 py-2 text-uppercase fw-semibold tracking-wider">Sistemas y Soluciones de Seguridad</span>
+        <h1 class="display-5 fw-bold mb-2">Servicios Disponibles</h1>
+        <p class="lead text-light-emerald mx-auto mb-4" style="max-width: 680px;">
+            Sistemas de alarma inteligentes, videovigilancia CCTV y seguridad perimetral en Lago Agrio (Nueva Loja) con monitoreo remoto 24/7.
+        </p>
+        <div>
+            {% if current_user.is_authenticated and current_user.has_role('Administrador', 'Gestor de proyectos') %}
+            <a href="{{ url_for('nuevo_servicio') }}" class="btn btn-verde btn-lg shadow-sm">
+                <i class="bi bi-plus-circle me-2"></i>Registrar nuevo servicio
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     LISTADO PRINCIPAL DE SERVICIOS (TARJETAS RESPONSIVAS CON BUSCADOR)
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <!-- Barra de Control del Listado -->
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom flex-wrap gap-2">
+            <div>
+                <h2 class="h4 fw-bold text-navy mb-0">Catálogo de Soluciones y Servicios</h2>
+                <p class="text-muted small mb-0">Explora y cotiza los sistemas de alarma inteligentes y soluciones de seguridad para tu inmueble</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-navy text-white px-3 py-2 rounded-pill">
+                    <i class="bi bi-grid-fill me-1"></i><span id="badgeTotalServicios">{{ servicios|length }}</span> servicios
+                </span>
+                {% if current_user.is_authenticated and current_user.has_role('Administrador', 'Gestor de proyectos') %}
+                <a href="{{ url_for('nuevo_servicio') }}" class="btn btn-outline-brand btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo Servicio
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ==============================================================================
+             PANEL DEL BUSCADOR Y FILTROS MULTICRITERIO
+             ============================================================================== -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 p-md-4 bg-white" style="border: 1px solid var(--border-color) !important;">
+            <div class="row g-3 align-items-center">
+                <!-- Buscador de texto libre con ícono y botón para borrar -->
+                <div class="col-lg-5 col-md-6">
+                    <label for="buscadorServicios" class="form-label small fw-semibold text-navy mb-1">
+                        <i class="bi bi-search text-emerald me-1"></i>Buscar servicio
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="buscadorServicios" class="form-control bg-light border-start-0 border-end-0 py-2"
+                               placeholder="Ej. Alarma, Cámaras, Monitoreo, Cerco, Sensores..."
+                               value="{{ query_busqueda or '' }}"
+                               autocomplete="off">
+                        <button class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" type="button" id="btnLimpiarBusqueda" title="Borrar búsqueda">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtro por Categoría / Tipo de Servicio -->
+                <div class="col-lg-3 col-md-3 col-sm-6">
+                    <label for="filtroCategoria" class="form-label small fw-semibold text-navy mb-1">
+                        <i class="bi bi-folder2-open text-primary me-1"></i>Categoría
+                    </label>
+                    <select id="filtroCategoria" class="form-select rounded-pill py-2 bg-light">
+                        <option value="">Todas las categorías</option>
+                        {% for cat in tipos_servicio %}
+                        <option value="{{ cat.nombre }}" {% if tipo_seleccionado == cat.nombre %}selected{% endif %}>{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filtro por Estado / Disponibilidad -->
+                <div class="col-lg-2 col-md-3 col-sm-6">
+                    <label for="filtroDisponibilidad" class="form-label small fw-semibold text-navy mb-1">
+                        <i class="bi bi-toggle-on text-success me-1"></i>Disponibilidad
+                    </label>
+                    <select id="filtroDisponibilidad" class="form-select rounded-pill py-2 bg-light">
+                        <option value="">Todos los estados</option>
+                        <option value="1">Solo disponibles</option>
+                        <option value="0">Próximamente</option>
+                    </select>
+                </div>
+
+                <!-- Ordenar por precio / nombre -->
+                <div class="col-lg-2 col-md-12">
+                    <label for="ordenarServicios" class="form-label small fw-semibold text-navy mb-1">
+                        <i class="bi bi-arrow-down-up text-secondary me-1"></i>Ordenar por
+                    </label>
+                    <select id="ordenarServicios" class="form-select rounded-pill py-2 bg-light">
+                        <option value="relevancia">Relevancia</option>
+                        <option value="precio-asc">Precio: menor a mayor</option>
+                        <option value="precio-desc">Precio: mayor a menor</option>
+                        <option value="nombre-asc">Nombre: A - Z</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Chips / Píldoras de filtrado rápido por categoría -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top">
+                <span class="small text-muted fw-semibold me-1"><i class="bi bi-funnel-fill text-emerald me-1"></i>Filtro rápido:</span>
+                <button type="button" class="btn btn-sm btn-verde rounded-pill px-3 filtro-chip active" data-categoria="">
+                    Todos
+                </button>
+                {% for cat in tipos_servicio %}
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 filtro-chip" data-categoria="{{ cat.nombre }}">
+                    {{ cat.nombre }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if not base_datos_disponible %}
+        <div class="alert alert-warning border d-flex align-items-start gap-2" role="alert">
+            <i class="bi bi-database-exclamation fs-5"></i>
+            <div>
+                <strong>El catálogo no está disponible temporalmente.</strong>
+                <div>Los servicios guardados aparecerán aquí cuando se restablezca la conexión con PostgreSQL.</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Indicador de Conteo y Filtros Activos -->
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="small text-muted">
+                Mostrando <strong id="contadorVisibles" class="text-navy">{{ servicios|length }}</strong> de <strong id="contadorTotal">{{ servicios|length }}</strong> servicios
+                <span id="filtroActivoBadge" class="badge bg-emerald-subtle text-emerald-text ms-2 d-none"></span>
+            </div>
+            <div id="btnRestablecerContenedor" class="d-none">
+                <button type="button" id="btnRestablecerFiltros" class="btn btn-link btn-sm text-decoration-none text-muted p-0">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar todos los filtros
+                </button>
+            </div>
+        </div>
+
+        {% if servicios %}
+        <!-- Cuadrícula de Servicios -->
+        <div class="row g-4" id="contenedorServicios">
+            {% for servicio in servicios %}
+            <div class="col-md-6 col-lg-4 service-col"
+                 data-nombre="{{ (servicio.nombre or '')|lower }}"
+                 data-descripcion="{{ (servicio.descripcion or '')|lower }}"
+                 data-tipo="{{ (servicio.tipo_nombre or '')|lower }}"
+                 data-tipo-exacto="{{ servicio.tipo_nombre or '' }}"
+                 data-disponible="{{ '1' if servicio.disponible else '0' }}"
+                 data-precio="{{ servicio.precio_base or 0 }}">
+                <div class="card h-100 service-card shadow-sm border-0 d-flex flex-column">
+                    <!-- Portada del Servicio con Precio Flotante -->
+                    <div class="card-img-wrapper">
+                        <img src="{{ servicio.imagen or 'https://images.unsplash.com/photo-1460925895917-afdab827c52f' }}"
+                             alt="{{ servicio.nombre }}">
+                        
+                        <div class="price-tag">
+                            ${{ "%.2f"|format(servicio.precio_base or 0.0) }} <span>USD</span>
+                        </div>
+                    </div>
+
+                    <!-- Cuerpo de la Tarjeta -->
+                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-end align-items-center mb-2">
+                            {% if servicio.disponible %}
+                                <span class="badge badge-disponible">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Disponible
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark px-2 py-1 fw-bold shadow-sm">
+                                    <i class="bi bi-stars me-1"></i>Próximamente (Servicio Futuro)
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <span class="badge bg-light text-navy border px-2 py-1 mb-2 align-self-start badge-categoria-tarjeta">
+                            <i class="bi bi-collection me-1"></i>{{ servicio.tipo_nombre }}
+                        </span>
+
+                        <h3 class="h5 card-title fw-bold text-navy my-2 titulo-servicio">
+                            {{ servicio.nombre }}
+                        </h3>
+
+                        <p class="card-text text-muted small flex-grow-1 mb-4 descripcion-servicio">
+                            {{ servicio.descripcion }}
+                        </p>
+
+                        <!-- Botones de Acción (Cotizar/Información, Editar, Eliminar) -->
+                        <div class="pt-3 border-top mt-auto d-flex justify-content-between align-items-center gap-2">
+                            {% if current_user.is_authenticated and current_user.has_role('Administrador', 'Gestor de proyectos', 'Soporte técnico') %}
+                            <a href="{{ url_for('nueva_factura', servicio_id=servicio.id, tipo='Cotizacion') }}" class="btn btn-verde btn-sm rounded-pill flex-grow-1">
+                                <i class="bi bi-receipt me-1"></i>Cotizar
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('inicio') }}#contacto" class="btn btn-outline-brand btn-sm rounded-pill flex-grow-1">
+                                <i class="bi bi-envelope me-1"></i>Solicitar Información
+                            </a>
+                            {% endif %}
+
+                            {% if current_user.is_authenticated and current_user.has_permission('servicios.editar') %}
+                            <a href="{{ url_for('editar_servicio', id=servicio.id) }}" class="btn btn-outline-primary btn-sm rounded-pill" title="Editar servicio">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            {% endif %}
+
+                            {% if current_user.is_authenticated and current_user.is_admin() %}
+                            {% if servicio.detalles_relacionados|int > 0 %}
+                            <span class="btn btn-outline-secondary btn-sm rounded-pill disabled"
+                                  title="No se puede borrar: el servicio está relacionado con facturas o cotizaciones"
+                                  aria-label="Servicio relacionado, no se puede borrar">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('eliminar_servicio', id=servicio.id) }}" onsubmit="return confirm('¿Deseas eliminar este servicio?');" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" title="Eliminar servicio">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación de Servicios (10 por página) -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-4 border-top mt-4" id="contenedorPaginacionServicios">
+            <small class="text-muted">
+                Mostrando <span id="contadorPaginacionServiciosTexto" class="fw-semibold text-navy">1 - {{ 10 if servicios|length > 10 else servicios|length }}</span> de <span id="totalServiciosPaginacion" class="fw-semibold text-navy">{{ servicios|length }}</span> servicios
+            </small>
+            <nav aria-label="Navegación de servicios">
+                <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionServicios">
+                    <!-- Botones generados dinámicamente -->
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Estado "Sin Resultados" cuando el buscador no encuentra coincidencias -->
+        <div id="sinResultados" class="card p-5 text-center shadow-sm border-0 rounded-4 mt-4 d-none bg-white">
+            <div class="mb-3 text-muted">
+                <i class="bi bi-search display-3 text-emerald"></i>
+            </div>
+            <h4 class="text-navy fw-bold mb-2">No se encontraron servicios que coincidan</h4>
+            <p class="text-muted mb-4" id="sinResultadosDetalle">
+                Intenta ajustando los términos de búsqueda o seleccionando otra categoría.
+            </p>
+            <div>
+                <button type="button" id="btnRestablecerSinResultados" class="btn btn-verde rounded-pill px-4">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Ver todos los servicios
+                </button>
+            </div>
+        </div>
+
+        {% elif base_datos_disponible %}
+        <!-- Estado Vacío cuando no hay servicios registrados en la base de datos -->
+        <div class="card p-5 text-center shadow-sm border-0 rounded-4">
+            <h4 class="text-navy fw-bold">Aún no se encuentran servicios</h4>
+            <p class="text-muted">La base de datos no tiene servicios registrados en este momento.</p>
+            {% if current_user.is_authenticated and current_user.has_role('Administrador', 'Gestor de proyectos') %}
+            <div class="mt-3">
+                <a href="{{ url_for('nuevo_servicio') }}" class="btn btn-verde">
+                    <i class="bi bi-plus-circle me-1"></i>Registrar Servicio
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if not current_user.is_authenticated %}
+        <!-- Mensaje para visitantes sobre servicios futuros exclusivos -->
+        <div class="alert alert-info border-0 shadow-sm rounded-4 p-4 mt-5 d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-lock-fill fs-2 text-primary"></i>
+                <div>
+                    <h5 class="fw-bold text-navy mb-1">¿Quieres conocer los servicios que lanzaremos próximamente?</h5>
+                    <p class="text-muted small mb-0">Los usuarios con cuenta activa pueden visualizar los proyectos en desarrollo y próximos lanzamientos.</p>
+                </div>
+            </div>
+            <a href="{{ url_for('login') }}" class="btn btn-verde btn-sm rounded-pill px-4 fw-semibold">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar Sesión
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- ==============================================================================
+     SCRIPT DE BÚSQUEDA INTERACTIVA Y FILTRADO EN TIEMPO REAL
+     ============================================================================== -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const inputBuscador = document.getElementById("buscadorServicios");
+    const btnLimpiar = document.getElementById("btnLimpiarBusqueda");
+    const selectCategoria = document.getElementById("filtroCategoria");
+    const selectDisponibilidad = document.getElementById("filtroDisponibilidad");
+    const selectOrdenar = document.getElementById("ordenarServicios");
+    const chipsCategoria = document.querySelectorAll(".filtro-chip");
+    const contenedor = document.getElementById("contenedorServicios");
+    const cards = Array.from(document.querySelectorAll(".service-col"));
+    const sinResultados = document.getElementById("sinResultados");
+    const sinResultadosDetalle = document.getElementById("sinResultadosDetalle");
+    const contadorVisibles = document.getElementById("contadorVisibles");
+    const contadorTotal = document.getElementById("contadorTotal");
+    const filtroActivoBadge = document.getElementById("filtroActivoBadge");
+    const btnRestablecerContenedor = document.getElementById("btnRestablecerContenedor");
+    const btnRestablecer = document.getElementById("btnRestablecerFiltros");
+    const btnRestablecerSinRes = document.getElementById("btnRestablecerSinResultados");
+
+    const contadorPaginacionTexto = document.getElementById("contadorPaginacionServiciosTexto");
+    const totalServiciosPaginacion = document.getElementById("totalServiciosPaginacion");
+    const listaBotones = document.getElementById("listaBotonesPaginacionServicios");
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionServicios");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let paginaActual = 1;
+    let cardsFiltradas = [...cards];
+
+    if (!cards.length) return;
+
+    function normalizar(texto) {
+        return (texto || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    function filtrarYPaginar(irAPagina = 1) {
+        const query = normalizar(inputBuscador.value);
+        const categoria = normalizar(selectCategoria.value);
+        const disponibilidad = selectDisponibilidad.value;
+
+        cardsFiltradas = cards.filter(card => {
+            const nombre = normalizar(card.dataset.nombre);
+            const descripcion = normalizar(card.dataset.descripcion);
+            const tipo = normalizar(card.dataset.tipo);
+            const disp = card.dataset.disponible;
+
+            const coincideTexto = !query || nombre.includes(query) || descripcion.includes(query) || tipo.includes(query);
+            const coincideCategoria = !categoria || tipo === categoria;
+            const coincideDisp = !disponibilidad || disp === disponibilidad;
+
+            return coincideTexto && coincideCategoria && coincideDisp;
+        });
+
+        // Ordenar cardsFiltradas según criterio
+        const criterio = selectOrdenar.value;
+        cardsFiltradas.sort((a, b) => {
+            const precioA = parseFloat(a.dataset.precio || 0);
+            const precioB = parseFloat(b.dataset.precio || 0);
+            const nombreA = a.dataset.nombre || "";
+            const nombreB = b.dataset.nombre || "";
+
+            if (criterio === "precio-asc") return precioA - precioB;
+            if (criterio === "precio-desc") return precioB - precioA;
+            if (criterio === "nombre-asc") return nombreA.localeCompare(nombreB);
+            return 0;
+        });
+
+        // Reordenar en el DOM
+        if (contenedor) {
+            cardsFiltradas.forEach(card => contenedor.appendChild(card));
+        }
+
+        const totalRegistros = cardsFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalRegistros / REGISTROS_POR_PAGINA));
+        paginaActual = Math.min(Math.max(1, irAPagina), totalPaginas);
+
+        cards.forEach(card => card.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
+
+        for (let i = inicio; i < fin; i++) {
+            cardsFiltradas[i].classList.remove("d-none");
+        }
+
+        // Actualizar contadores
+        if (contadorVisibles) contadorVisibles.textContent = totalRegistros;
+        if (contadorTotal) contadorTotal.textContent = cards.length;
+        if (totalServiciosPaginacion) totalServiciosPaginacion.textContent = totalRegistros;
+        if (contadorPaginacionTexto) {
+            contadorPaginacionTexto.textContent = totalRegistros > 0 ? `${inicio + 1} - ${fin}` : "0 - 0";
+        }
+
+        // Actualizar badge de filtros activos
+        const filtrosActivos = [];
+        if (query) filtrosActivos.push(`"${inputBuscador.value.trim()}"`);
+        if (selectCategoria.value) filtrosActivos.push(selectCategoria.value);
+        if (disponibilidad === "1") filtrosActivos.push("Disponibles");
+        if (disponibilidad === "0") filtrosActivos.push("Próximamente");
+
+        if (filtrosActivos.length > 0) {
+            filtroActivoBadge.textContent = "Filtro: " + filtrosActivos.join(" | ");
+            filtroActivoBadge.classList.remove("d-none");
+            btnRestablecerContenedor.classList.remove("d-none");
+        } else {
+            filtroActivoBadge.classList.add("d-none");
+            btnRestablecerContenedor.classList.add("d-none");
+        }
+
+        // Mostrar u ocultar estado sin resultados
+        if (totalRegistros === 0) {
+            sinResultados.classList.remove("d-none");
+            if (query) {
+                sinResultadosDetalle.textContent = `No encontramos servicios que coincidan con "${inputBuscador.value.trim()}". Intenta con otra palabra clave o restablece los filtros.`;
+            } else {
+                sinResultadosDetalle.textContent = "No hay servicios que cumplan con la combinación de filtros seleccionada.";
+            }
+            if (contenedorPaginacion) contenedorPaginacion.classList.add("d-none");
+        } else {
+            sinResultados.classList.add("d-none");
+            if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", totalRegistros <= 10);
+        }
+
+        renderizarBotones(totalPaginas);
+    }
+
+    function renderizarBotones(totalPaginas) {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        if (totalPaginas <= 1) {
+            if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", cardsFiltradas.length <= 10);
+            return;
+        }
+        if (contenedorPaginacion) contenedorPaginacion.classList.remove("d-none");
+
+        const crearItem = (texto, pag, activo = false, deshabilitado = false) => {
+            const li = document.createElement("li");
+            li.className = `page-item ${activo ? 'active' : ''} ${deshabilitado ? 'disabled' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${texto}</button>`;
+            if (!deshabilitado && !activo) {
+                li.addEventListener("click", () => filtrarYPaginar(pag));
+            }
+            return li;
+        };
+
+        // Anterior
+        listaBotones.appendChild(crearItem("&laquo; Anterior", paginaActual - 1, false, paginaActual === 1));
+
+        if (totalPaginas <= 7) {
+            for (let p = 1; p <= totalPaginas; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+        } else {
+            listaBotones.appendChild(crearItem(1, 1, paginaActual === 1));
+
+            let start = Math.max(2, paginaActual - 1);
+            let end = Math.min(totalPaginas - 1, paginaActual + 1);
+
+            if (start > 2) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            for (let p = start; p <= end; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+
+            if (end < totalPaginas - 1) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            listaBotones.appendChild(crearItem(totalPaginas, totalPaginas, paginaActual === totalPaginas));
+        }
+
+        // Siguiente
+        listaBotones.appendChild(crearItem("Siguiente &raquo;", paginaActual + 1, false, paginaActual === totalPaginas));
+    }
+
+    function resetearFiltros() {
+        inputBuscador.value = "";
+        selectCategoria.value = "";
+        selectDisponibilidad.value = "";
+        selectOrdenar.value = "relevancia";
+
+        chipsCategoria.forEach(c => {
+            if (c.dataset.categoria === "") {
+                c.classList.add("btn-verde", "active");
+                c.classList.remove("btn-outline-secondary");
+            } else {
+                c.classList.remove("btn-verde", "active");
+                c.classList.add("btn-outline-secondary");
+            }
+        });
+
+        filtrarYPaginar(1);
+        inputBuscador.focus();
+    }
+
+    // Event listeners
+    inputBuscador.addEventListener("input", () => filtrarYPaginar(1));
+    btnLimpiar.addEventListener("click", function () {
+        inputBuscador.value = "";
+        filtrarYPaginar(1);
+        inputBuscador.focus();
+    });
+
+    selectCategoria.addEventListener("change", function () {
+        const val = this.value;
+        chipsCategoria.forEach(c => {
+            const coincide = c.dataset.categoria === val;
+            c.classList.toggle("btn-verde", coincide);
+            c.classList.toggle("active", coincide);
+            c.classList.toggle("btn-outline-secondary", !coincide);
+        });
+        filtrarYPaginar(1);
+    });
+
+    selectDisponibilidad.addEventListener("change", () => filtrarYPaginar(1));
+    selectOrdenar.addEventListener("change", () => filtrarYPaginar(1));
+
+    chipsCategoria.forEach(chip => {
+        chip.addEventListener("click", function () {
+            const cat = this.dataset.categoria;
+            selectCategoria.value = cat;
+
+            chipsCategoria.forEach(c => {
+                c.classList.remove("btn-verde", "active");
+                c.classList.add("btn-outline-secondary");
+            });
+            this.classList.add("btn-verde", "active");
+            this.classList.remove("btn-outline-secondary");
+
+            filtrarYPaginar(1);
+        });
+    });
+
+    if (btnRestablecer) btnRestablecer.addEventListener("click", resetearFiltros);
+    if (btnRestablecerSinRes) btnRestablecerSinRes.addEventListener("click", resetearFiltros);
+
+    // Inicialización al cargar la página
+    filtrarYPaginar(1);
+});
+</script>
+{% endblock %}

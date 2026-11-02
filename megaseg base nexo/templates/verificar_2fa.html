@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block titulo %}Verificación en Dos Pasos (2FA) - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<section class="page-header py-4 text-white">
+    <div class="container text-center">
+        <h1 class="h3 fw-bold mb-1">Doble Factor de Autenticación (2FA)</h1>
+        <p class="text-light-emerald small mb-0">
+            Seguridad reforzada para proteger el acceso a tu cuenta
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7 col-sm-10">
+                <div class="card form-card shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-white p-4 border-bottom text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-navy text-mint rounded-circle mb-3 shadow-sm" style="width: 60px; height: 60px; font-size: 1.6rem;">
+                            <i class="bi bi-phone-vibrate-fill"></i>
+                        </div>
+                        <h2 class="h5 fw-bold text-navy mb-1">Ingresa tu Código de Acceso</h2>
+                        <small class="text-muted">Se ha generado un código de seguridad de 6 dígitos</small>
+                    </div>
+
+                    <div class="card-body p-4">
+                        {% if codigo_simulado %}
+                            <div class="alert alert-info border-0 rounded-3 mb-4 text-center">
+                                <small class="text-muted d-block mb-1">Código de verificación de esta sesión:</small>
+                                <span class="fs-3 fw-bold text-navy letter-spacing-2">{{ codigo_simulado }}</span>
+                            </div>
+                        {% endif %}
+
+                        <form method="POST" id="form2fa" class="needs-validation" novalidate>
+                            {{ form.hidden_tag() }}
+                            <div id="advertencia2fa" class="alert alert-warning d-none align-items-start gap-2" role="alert" aria-live="polite">
+                                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                                <div>
+                                    <strong>Revisa el código.</strong>
+                                    <div id="mensaje2fa"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form.codigo.label(class="form-label fw-semibold text-navy small text-center w-100") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                                    {{ form.codigo(class="form-control form-control-lg text-center fw-bold letter-spacing-2" + (" is-invalid" if form.codigo.errors else ""), placeholder="000000", maxlength="6", inputmode="numeric", autocomplete="one-time-code", pattern="[0-9]{6}", autofocus=true) }}
+                                </div>
+                                <div id="feedback2fa" class="invalid-feedback d-block text-center"></div>
+                                {% for error in form.codigo.errors %}
+                                    <div class="text-danger small mt-1 text-center">
+                                        <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-grid mb-3">
+                                <button type="submit" id="boton2fa" class="btn btn-verde btn-lg rounded-3 fw-semibold">
+                                    <i class="bi bi-check-circle me-2"></i>Verificar e Ingresar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-footer bg-light p-3 text-center border-0">
+                        <a href="{{ url_for('login') }}" class="text-muted small text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i>Volver al inicio de sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="modalAdvertencia2fa" tabindex="-1" aria-labelledby="tituloAdvertencia2fa" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-body text-center p-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger-subtle text-danger mb-3" style="width: 58px; height: 58px;">
+                    <i class="bi bi-exclamation-lg fs-2"></i>
+                </div>
+                <h2 id="tituloAdvertencia2fa" class="h5 fw-bold text-danger">Código incompleto</h2>
+                <p id="detalleAdvertencia2fa" class="text-muted small mb-3">Escribe los 6 dígitos para continuar.</p>
+                <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

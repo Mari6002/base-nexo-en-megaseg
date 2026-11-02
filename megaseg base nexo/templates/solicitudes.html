@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block titulo %}Peticiones de clientes - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<section class="page-header py-4 text-white">
+    <div class="container">
+        <span class="badge bg-emerald px-3 py-2 text-uppercase fw-semibold">Gestión operativa</span>
+        <h1 class="h3 fw-bold mt-2 mb-1">Peticiones de clientes</h1>
+        <p class="text-light-emerald mb-0">Revisa solicitudes asignadas y registra el trabajo realizado.</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        {% if solicitudes %}
+        <div class="row g-3">
+            {% for solicitud in solicitudes %}
+            <div class="col-lg-6 fila-solicitud">
+                <article class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between gap-3 mb-2">
+                            <h2 class="h5 fw-bold text-navy mb-0">{{ solicitud['nombre'] }}</h2>
+                            <span class="badge bg-light text-navy">{{ solicitud['estado'] }}</span>
+                        </div>
+                        <p class="small text-muted mb-1"><i class="bi bi-envelope me-1"></i>{{ solicitud['correo'] }}</p>
+                        {% if solicitud['telefono'] %}
+                        <p class="small text-muted mb-1"><i class="bi bi-telephone me-1"></i>{{ solicitud['telefono'] }}</p>
+                        {% endif %}
+                        <p class="small fw-semibold text-emerald mb-2">{{ solicitud['tipo_servicio'] }}</p>
+                        <p class="mb-3">{{ solicitud['mensaje'] }}</p>
+                        {% if solicitud['respuesta_cliente'] %}
+                        <div class="alert alert-info py-2 small">
+                            <strong>Respuesta al cliente:</strong>
+                            <div class="mt-1">{{ solicitud['respuesta_cliente'] }}</div>
+                        </div>
+                        {% endif %}
+                        {% if current_user.rol_nombre == 'Soporte técnico' and solicitud['responsable_id'] == current_user.id %}
+                        <form method="post" action="{{ url_for('actualizar_solicitud', id=solicitud['id']) }}" class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Estado</label>
+                                <select name="estado" class="form-select form-select-sm" required>
+                                    {% for estado in ['Pendiente', 'En revisión', 'Asignada', 'En proceso', 'Resuelta', 'Descartada'] %}
+                                    <option value="{{ estado }}" {% if solicitud['estado'] == estado %}selected{% endif %}>{{ estado }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Respuesta al cliente</label>
+                                <textarea name="respuesta_cliente" class="form-control form-control-sm" rows="2" maxlength="5000">{{ solicitud['respuesta_cliente'] or '' }}</textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Trabajo realizado</label>
+                                <textarea name="trabajo_realizado" class="form-control form-control-sm" rows="2" maxlength="5000">{{ solicitud['trabajo_realizado'] or '' }}</textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Evidencia (enlace)</label>
+                                <input type="url" name="evidencia_url" class="form-control form-control-sm" value="{{ solicitud['evidencia_url'] or '' }}" maxlength="1000">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Responsable</label>
+                                <select name="responsable_id" class="form-select form-select-sm" disabled>
+                                    <option selected>{{ solicitud['responsable_nombre'] }}</option>
+                                </select>
+                                <input type="hidden" name="responsable_id" value="{{ current_user.id }}">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-verde btn-sm w-100" type="submit" title="Guardar cambios"><i class="bi bi-check-lg"></i></button>
+                            </div>
+                        </form>
+                        {% elif current_user.rol_nombre != 'Soporte técnico' %}
+                        <form method="post" action="{{ url_for('actualizar_solicitud', id=solicitud['id']) }}" class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Estado</label>
+                                <select name="estado" class="form-select form-select-sm" required>
+                                    {% for estado in ['Pendiente', 'En revisión', 'Asignada', 'En proceso', 'Resuelta', 'Descartada'] %}
+                                    <option value="{{ estado }}" {% if solicitud['estado'] == estado %}selected{% endif %}>{{ estado }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Responsable</label>
+                                <select name="responsable_id" class="form-select form-select-sm">
+                                    <option value="">Sin asignar</option>
+                                    {% for responsable in responsables %}
+                                    <option value="{{ responsable['id'] }}" {% if solicitud['responsable_id'] == responsable['id'] %}selected{% endif %}>{{ responsable['usuario'] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Respuesta al cliente</label>
+                                <textarea name="respuesta_cliente" class="form-control form-control-sm" rows="2" maxlength="5000">{{ solicitud['respuesta_cliente'] or '' }}</textarea>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Trabajo realizado</label>
+                                <textarea name="trabajo_realizado" class="form-control form-control-sm" rows="2" maxlength="5000">{{ solicitud['trabajo_realizado'] or '' }}</textarea>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Evidencia (enlace)</label>
+                                <input type="url" name="evidencia_url" class="form-control form-control-sm" value="{{ solicitud['evidencia_url'] or '' }}" maxlength="1000">
+                            </div>
+                            <div class="col-12 text-end">
+                                <button class="btn btn-verde btn-sm w-100" type="submit" title="Guardar cambios"><i class="bi bi-check-lg"></i></button>
+                            </div>
+                        </form>
+                        {% endif %}
+                        {% if solicitud['trabajo_realizado'] or solicitud['evidencia_url'] %}
+                        <div class="mt-3 pt-3 border-top small">
+                            {% if solicitud['trabajo_realizado'] %}<p class="mb-1"><strong>Trabajo realizado:</strong> {{ solicitud['trabajo_realizado'] }}</p>{% endif %}
+                            {% if solicitud['evidencia_url'] %}<a href="{{ solicitud['evidencia_url'] }}" target="_blank" rel="noopener noreferrer">Ver evidencia</a>{% endif %}
+                        </div>
+                        {% endif %}
+                        {% if solicitud['resuelto_por_nombre'] %}
+                        <div class="mt-3 pt-3 border-top small text-muted">
+                            <i class="bi bi-person-check me-1"></i>
+                            <strong>{{ 'Resuelta por' if solicitud['estado'] == 'Resuelta' else 'Descartada por' }}:</strong>
+                            {{ solicitud['resuelto_por_nombre'] }}
+                            {% if solicitud['fecha_resolucion'] %}
+                            · {{ solicitud['fecha_resolucion'].strftime('%d/%m/%Y %H:%M') }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación de Solicitudes (10 por página) -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 border-top mt-4 {{ 'd-none' if solicitudes|length <= 10 else '' }}" id="contenedorPaginacionSolicitudes">
+            <small class="text-muted">
+                Mostrando <span id="contadorPaginacionSolicitudesTexto" class="fw-semibold text-navy">1 - {{ 10 if solicitudes|length > 10 else solicitudes|length }}</span> de <span class="fw-semibold text-navy">{{ solicitudes|length }}</span> solicitudes
+            </small>
+            <nav aria-label="Navegación de solicitudes">
+                <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionSolicitudes">
+                    <!-- Botones generados dinámicamente -->
+                </ul>
+            </nav>
+        </div>
+        {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+            <i class="bi bi-inbox text-muted display-5"></i>
+            <h2 class="h5 text-navy mt-3">Todavía no hay peticiones</h2>
+            <p class="text-muted mb-0">Las solicitudes enviadas desde la página principal aparecerán aquí.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const filasSolicitudes = Array.from(document.querySelectorAll(".fila-solicitud"));
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionSolicitudes");
+    const listaBotones = document.getElementById("listaBotonesPaginacionSolicitudes");
+    const contadorTexto = document.getElementById("contadorPaginacionSolicitudesTexto");
+    const REGISTROS_POR_PAGINA = 10;
+
+    if (!filasSolicitudes.length || filasSolicitudes.length <= REGISTROS_POR_PAGINA) {
+        return;
+    }
+
+    const totalPaginas = Math.ceil(filasSolicitudes.length / REGISTROS_POR_PAGINA);
+    let paginaActual = 1;
+
+    function renderizarPagina(p) {
+        paginaActual = Math.max(1, Math.min(p, totalPaginas));
+        filasSolicitudes.forEach(f => f.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, filasSolicitudes.length);
+
+        for (let i = inicio; i < fin; i++) {
+            filasSolicitudes[i].classList.remove("d-none");
+        }
+
+        if (contadorTexto) {
+            contadorTexto.textContent = `${inicio + 1} - ${fin}`;
+        }
+
+        renderizarBotones();
+    }
+
+    function renderizarBotones() {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        // Botón Anterior
+        const liAnt = document.createElement("li");
+        liAnt.className = `page-item ${paginaActual === 1 ? 'disabled' : ''}`;
+        liAnt.innerHTML = `<button class="page-link" type="button">&laquo; Anterior</button>`;
+        liAnt.addEventListener("click", () => {
+            if (paginaActual > 1) renderizarPagina(paginaActual - 1);
+        });
+        listaBotones.appendChild(liAnt);
+
+        // Páginas numeradas
+        for (let i = 1; i <= totalPaginas; i++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${i === paginaActual ? 'active' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${i}</button>`;
+            li.addEventListener("click", () => renderizarPagina(i));
+            listaBotones.appendChild(li);
+        }
+
+        // Botón Siguiente
+        const liSig = document.createElement("li");
+        liSig.className = `page-item ${paginaActual === totalPaginas ? 'disabled' : ''}`;
+        liSig.innerHTML = `<button class="page-link" type="button">Siguiente &raquo;</button>`;
+        liSig.addEventListener("click", () => {
+            if (paginaActual < totalPaginas) renderizarPagina(paginaActual + 1);
+        });
+        listaBotones.appendChild(liSig);
+    }
+
+    renderizarPagina(1);
+});
+</script>
+{% endblock %}

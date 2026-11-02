@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block titulo %}Gestión de Usuarios y Roles - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<section class="page-header py-4 text-white">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge bg-danger text-white px-3 py-1 mb-2 text-uppercase fw-semibold">
+                    <i class="bi bi-shield-shaded me-1"></i>Acceso Exclusivo Administrador
+                </span>
+                <h1 class="h3 fw-bold mb-1">Control de Usuarios, Roles y Aprobaciones</h1>
+                <p class="text-light-emerald small mb-0">
+                    Administra los accesos del sistema y autoriza solicitudes de nuevos administradores
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_logs') }}" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-clock-history me-1"></i>Ver Logs de Auditoría
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+
+        <!-- 1. SOLICITUDES DE ROLES PENDIENTES DE APROBACIÓN -->
+        {% set pendientes = usuarios | selectattr('aprobado', 'equalto', false) | list %}
+        {% if pendientes %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4 border-start border-4 border-warning bg-white">
+                <div class="card-header bg-warning bg-opacity-10 border-0 p-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-exclamation text-warning fs-5"></i>
+                            <h2 class="h6 fw-bold text-navy mb-0">
+                                Solicitudes de Acceso Pendientes de Aprobación ({{ pendientes | length }})
+                            </h2>
+                        </div>
+                        <small class="text-muted">Un Administrador activo debe autorizar o asignar estas cuentas para que puedan ingresar</small>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-muted text-uppercase">
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Correo</th>
+                                    <th>Rol Solicitado</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th class="text-end">Acción de Aprobación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in pendientes %}
+                                    <tr>
+                                        <td class="fw-bold text-navy">{{ u.usuario }}</td>
+                                        <td>{{ u.correo }}</td>
+                                        <td>
+                                            <span class="badge rounded-pill px-2 py-1 {% if u.rol_nombre == 'Administrador' %}bg-danger{% elif u.rol_nombre == 'Gestor de proyectos' %}bg-primary{% elif u.rol_nombre == 'Soporte técnico' %}bg-info text-dark{% elif u.rol_nombre == 'Cliente' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ u.rol_nombre }}
+                                            </span>
+                                        </td>
+                                        <td class="text-muted small">{{ u.fecha_registro.strftime('%d/%m/%Y %H:%M') if u.fecha_registro else 'Reciente' }}</td>
+                                        <td class="text-end">
+                                            <form action="{{ url_for('admin_aprobar_usuario', id=u.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+                                                    <i class="bi bi-check-lg me-1"></i>Aprobar como {{ u.rol_nombre }}
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- 2. LISTADO COMPLETO DE USUARIOS Y ROLES -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <h2 class="h5 fw-bold text-navy mb-1">Directorio de Cuentas de Usuario</h2>
+                    <small class="text-muted">Todos los usuarios registrados con sus roles asignados</small>
+                </div>
+                <div>
+                    <small class="text-muted">
+                        Mostrando <strong id="contadorUsuariosVisibles" class="text-navy">{{ usuarios|length }}</strong> de {{ usuarios|length }} cuentas
+                    </small>
+                </div>
+            </div>
+
+            <!-- Buscador de Usuarios -->
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-md-6 col-lg-5">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">
+                            <i class="bi bi-search text-emerald"></i>
+                        </span>
+                        <input type="text" id="buscadorUsuarios" class="form-control bg-light border-start-0 border-end-0 py-2"
+                               placeholder="Buscar por usuario, correo electrónico o rol..."
+                               autocomplete="off">
+                        <button class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" type="button" id="btnLimpiarUsuarios" title="Borrar búsqueda">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small text-muted text-uppercase">
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Correo Electrónico</th>
+                            <th>Rol Asignado</th>
+                            <th>Email Verificado</th>
+                            <th>Aprobación</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                            <tr class="fila-usuario"
+                                data-usuario="{{ u.usuario }}"
+                                data-correo="{{ u.correo }}"
+                                data-rol="{{ u.rol_nombre }}">
+                                <td class="text-muted small">#{{ u.id }}</td>
+                                <td class="fw-bold text-navy">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-person-circle fs-5 {% if u.rol_nombre == 'Administrador' %}text-danger{% elif u.rol_nombre == 'Gestor de proyectos' %}text-primary{% elif u.rol_nombre == 'Soporte técnico' %}text-info{% elif u.rol_nombre == 'Cliente' %}text-success{% else %}text-secondary{% endif %}"></i>
+                                        <span>{{ u.usuario }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ u.correo }}</td>
+                                <td>
+                                    <span class="badge rounded-pill px-2 py-1 {% if u.rol_nombre == 'Administrador' %}bg-danger{% elif u.rol_nombre == 'Gestor de proyectos' %}bg-primary{% elif u.rol_nombre == 'Soporte técnico' %}bg-info text-dark{% elif u.rol_nombre == 'Cliente' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {{ u.rol_nombre }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if u.email_confirmado %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Verificado
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">
+                                            <i class="bi bi-clock me-1"></i>Pendiente
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if u.aprobado %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                            <i class="bi bi-check-lg me-1"></i>Aprobado
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                                            <i class="bi bi-x-circle me-1"></i>No Aprobado
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if u.dos_factores_activo %}
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">Activo</span>
+                                    {% else %}
+                                        <span class="text-muted small">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end align-items-center gap-1 flex-wrap">
+                                        <form action="{{ url_for('admin_cambiar_rol', id=u.id) }}" method="POST" class="d-inline-flex align-items-center gap-1">
+                                            <select name="nuevo_rol_id" class="form-select form-select-sm rounded-pill" style="width: auto;">
+                                                {% for r in roles %}
+                                                    <option value="{{ r.id }}" {% if u.rol_id == r.id %}selected{% endif %}>{{ r.nombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-light border rounded-pill" title="Actualizar rol">
+                                                <i class="bi bi-arrow-repeat text-navy"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ url_for('admin_restablecer_password', id=u.id) }}" method="POST"
+                                              onsubmit="return confirm('Se generará una contraseña temporal nueva para este usuario. ¿Continuar?');"
+                                              class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill" title="Generar contraseña temporal">
+                                                <i class="bi bi-key-fill me-1"></i>Restablecer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación de Usuarios (10 por página) -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 border-top mt-3" id="contenedorPaginacionUsuarios">
+                <small class="text-muted">
+                    Mostrando <span id="contadorPaginacionUsuariosTexto" class="fw-semibold text-navy">1 - {{ 10 if usuarios|length > 10 else usuarios|length }}</span> de <span id="totalUsuariosPaginacion" class="fw-semibold text-navy">{{ usuarios|length }}</span> usuarios
+                </small>
+                <nav aria-label="Navegación de usuarios">
+                    <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionUsuarios">
+                        <!-- Botones generados dinámicamente -->
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Estado sin resultados de búsqueda -->
+            <div id="sinResultadosUsuarios" class="p-4 text-center d-none">
+                <div class="mb-2">
+                    <i class="bi bi-search text-emerald" style="font-size: 2rem;"></i>
+                </div>
+                <h6 class="fw-bold text-navy mb-1">No se encontraron usuarios</h6>
+                <p class="text-muted small mb-2">No hay cuentas que coincidan con el término ingresado.</p>
+                <button type="button" id="btnRestablecerUsuarios" class="btn btn-outline-brand btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar búsqueda
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. MATRIZ DE PERMISOS  POR ROL (rol_permisos) -->
+        <div class="card border-0 shadow-sm rounded-4 mt-4 bg-white">
+            <div class="card-header bg-white border-bottom p-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2">
+                            <i class="bi bi-key-fill me-1"></i>Control de Acceso Basado en Roles
+                        </span>
+                        <h2 class="h5 fw-bold text-navy mb-1">Matriz de Permisos  por Rol</h2>
+                        <p class="text-muted small mb-0">
+                            Asociaciones directas en la base de datos (<code class="text-navy">rol_permisos</code> con PRIMARY KEY compuesta <code class="text-navy">(rol_id, permiso_id)</code>)
+                        </p>
+                    </div>
+                    <span class="badge bg-dark-subtle text-dark border rounded-pill px-3 py-2">
+                        <i class="bi bi-database-lock me-1"></i>27 Permisos Activos
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    {% for rol_nombre, lista_permisos in permisos_por_rol.items() %}
+                        <div class="col-lg-6 col-xl-4">
+                            <div class="card h-100 border rounded-4 shadow-none bg-light bg-opacity-50">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center {% if rol_nombre == 'Administrador' %}bg-danger-subtle text-danger{% elif rol_nombre == 'Gestor de proyectos' %}bg-primary-subtle text-primary{% elif rol_nombre == 'Soporte técnico' %}bg-warning-subtle text-warning{% elif rol_nombre == 'Cliente' %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %}" style="width: 36px; height: 36px;">
+                                                <i class="bi {% if rol_nombre == 'Administrador' %}bi-shield-shaded{% elif rol_nombre == 'Gestor de proyectos' %}bi-kanban{% elif rol_nombre == 'Soporte técnico' %}bi-tools{% elif rol_nombre == 'Cliente' %}bi-person-check{% else %}bi-person-gear{% endif %}"></i>
+                                            </div>
+                                            <h3 class="h6 fw-bold mb-0 text-navy">{{ rol_nombre }}</h3>
+                                        </div>
+                                        <span class="badge bg-white border text-secondary rounded-pill small">
+                                            {{ lista_permisos | length }} permisos
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-column gap-1" style="max-height: 240px; overflow-y: auto;">
+                                        {% for p in lista_permisos %}
+                                            <div class="p-2 rounded-3 bg-white border small d-flex justify-content-between align-items-center gap-2">
+                                                <div class="d-flex align-items-center gap-2 text-truncate">
+                                                    <i class="bi bi-check-circle-fill text-success" style="font-size: 0.8rem;"></i>
+                                                    <span class="fw-semibold text-dark text-truncate" title="{{ p.descripcion }}">{{ p.descripcion }}</span>
+                                                </div>
+                                                <code class="text-muted" style="font-size: 0.75rem;">{{ p.codigo }}</code>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("buscadorUsuarios");
+    const btnLimpiar = document.getElementById("btnLimpiarUsuarios");
+    const btnReset = document.getElementById("btnRestablecerUsuarios");
+    const todasLasFilas = Array.from(document.querySelectorAll(".fila-usuario"));
+    const sinRes = document.getElementById("sinResultadosUsuarios");
+    const contador = document.getElementById("contadorUsuariosVisibles");
+    const contadorPaginacionTexto = document.getElementById("contadorPaginacionUsuariosTexto");
+    const totalUsuariosPaginacion = document.getElementById("totalUsuariosPaginacion");
+    const listaBotones = document.getElementById("listaBotonesPaginacionUsuarios");
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionUsuarios");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let paginaActual = 1;
+    let filasFiltradas = [...todasLasFilas];
+
+    if (!todasLasFilas.length) return;
+
+    function normalizar(t) {
+        return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    function filtrarYPaginar(irAPagina = 1) {
+        const q = normalizar(input ? input.value : "");
+
+        filasFiltradas = todasLasFilas.filter(fila => {
+            const user = normalizar(fila.dataset.usuario);
+            const correo = normalizar(fila.dataset.correo);
+            const rol = normalizar(fila.dataset.rol);
+            return !q || user.includes(q) || correo.includes(q) || rol.includes(q);
+        });
+
+        const totalRegistros = filasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalRegistros / REGISTROS_POR_PAGINA));
+        paginaActual = Math.min(Math.max(1, irAPagina), totalPaginas);
+
+        todasLasFilas.forEach(f => f.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
+
+        for (let i = inicio; i < fin; i++) {
+            filasFiltradas[i].classList.remove("d-none");
+        }
+
+        if (contador) contador.textContent = totalRegistros;
+        if (totalUsuariosPaginacion) totalUsuariosPaginacion.textContent = totalRegistros;
+        if (contadorPaginacionTexto) {
+            contadorPaginacionTexto.textContent = totalRegistros > 0 ? `${inicio + 1} - ${fin}` : "0 - 0";
+        }
+        if (sinRes) sinRes.classList.toggle("d-none", totalRegistros > 0);
+        if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", totalRegistros === 0);
+
+        renderizarBotones(totalPaginas);
+    }
+
+    function renderizarBotones(totalPaginas) {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        if (totalPaginas <= 1) {
+            if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", filasFiltradas.length <= 10);
+            return;
+        }
+        if (contenedorPaginacion) contenedorPaginacion.classList.remove("d-none");
+
+        const crearItem = (texto, pag, activo = false, deshabilitado = false) => {
+            const li = document.createElement("li");
+            li.className = `page-item ${activo ? 'active' : ''} ${deshabilitado ? 'disabled' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${texto}</button>`;
+            if (!deshabilitado && !activo) {
+                li.addEventListener("click", () => filtrarYPaginar(pag));
+            }
+            return li;
+        };
+
+        // Anterior
+        listaBotones.appendChild(crearItem("&laquo; Anterior", paginaActual - 1, false, paginaActual === 1));
+
+        if (totalPaginas <= 7) {
+            for (let p = 1; p <= totalPaginas; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+        } else {
+            listaBotones.appendChild(crearItem(1, 1, paginaActual === 1));
+
+            let start = Math.max(2, paginaActual - 1);
+            let end = Math.min(totalPaginas - 1, paginaActual + 1);
+
+            if (start > 2) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            for (let p = start; p <= end; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+
+            if (end < totalPaginas - 1) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            listaBotones.appendChild(crearItem(totalPaginas, totalPaginas, paginaActual === totalPaginas));
+        }
+
+        // Siguiente
+        listaBotones.appendChild(crearItem("Siguiente &raquo;", paginaActual + 1, false, paginaActual === totalPaginas));
+    }
+
+    if (input) input.addEventListener("input", () => filtrarYPaginar(1));
+    function limpiar() {
+        if (input) input.value = "";
+        filtrarYPaginar(1);
+        if (input) input.focus();
+    }
+    if (btnLimpiar) btnLimpiar.addEventListener("click", limpiar);
+    if (btnReset) btnReset.addEventListener("click", limpiar);
+
+    filtrarYPaginar(1);
+});
+</script>
+{% endblock %}

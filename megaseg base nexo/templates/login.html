@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block titulo %}Iniciar Sesión - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: AUTENTICACIÓN
+     ============================================================================== -->
+<section class="page-header py-4 text-white">
+    <div class="container text-center">
+        <h1 class="h3 fw-bold mb-1">Acceso Administrativo</h1>
+        <p class="text-light-emerald small mb-0">
+            Inicia sesión para gestionar clientes, servicios, facturación y operaciones
+        </p>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     FORMULARIO DE LOGIN (Flask-Login + WTForms)
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7 col-sm-10">
+                <div class="card form-card shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-white p-4 border-bottom text-center">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-navy text-mint rounded-circle mb-3 shadow-sm" style="width: 60px; height: 60px; font-size: 1.6rem;">
+                            <i class="bi bi-shield-lock-fill"></i>
+                        </div>
+                        <h2 class="h5 fw-bold text-navy mb-1">Iniciar Sesión</h2>
+                        <small class="text-muted">Ingresa tus credenciales para ingresar al sistema</small>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form method="POST" novalidate>
+                            <!-- Token de protección CSRF -->
+                            {{ form.hidden_tag() }}
+
+                            <!-- 1. Campo Usuario -->
+                            <div class="mb-3">
+                                {{ form.usuario.label(class="form-label fw-semibold text-navy small") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-person-fill"></i></span>
+                                    {{ form.usuario(class="form-control" + (" is-invalid" if form.usuario.errors else ""), placeholder="Nombre de usuario", autocomplete="username", autofocus=true) }}
+                                </div>
+                                {% for error in form.usuario.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- 2. Campo Contraseña -->
+                            <div class="mb-3">
+                                {{ form.password.label(class="form-label fw-semibold text-navy small") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-key-fill"></i></span>
+                                    {{ form.password(class="form-control password-toggle" + (" is-invalid" if form.password.errors else ""), placeholder="********", autocomplete="current-password") }}
+                                    <button type="button" class="btn btn-outline-secondary password-toggle-btn" aria-label="Mostrar contraseña" title="Mostrar contraseña">
+                                        <i class="bi bi-eye-slash"></i>
+                                    </button>
+                                </div>
+                                {% for error in form.password.errors %}
+                                    <div class="text-danger small mt-1">
+                                        <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- 3. Recordar sesión -->
+                            <div class="mb-4 form-check">
+                                {{ form.recordarme(class="form-check-input", id="recordarme") }}
+                                {{ form.recordarme.label(class="form-check-label text-muted small", for="recordarme") }}
+                            </div>
+
+                            <!-- 4. Botón de envío -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-verde btn-lg rounded-3 fw-semibold">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar al Sistema
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-footer bg-light p-3 text-center border-0">
+                        <small class="text-muted">
+                            ¿Aún no tienes una cuenta de acceso?
+                            <a href="{{ url_for('registro') }}" class="text-navy fw-semibold text-decoration-none">
+                                Regístrate aquí <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

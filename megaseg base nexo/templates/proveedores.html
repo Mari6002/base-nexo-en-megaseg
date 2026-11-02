@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block titulo %}Proveedores - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: PROVEEDORES DE INFRAESTRUCTURA
+     ============================================================================== -->
+<section class="page-header py-5 text-white">
+    <div class="container text-center">
+        <span class="badge bg-emerald mb-2 px-3 py-2 text-uppercase fw-semibold tracking-wider">Infraestructura & Cloud</span>
+        <h1 class="display-5 fw-bold mb-3">Nuestros Proveedores</h1>
+        <p class="lead text-light-emerald mx-auto mb-4" style="max-width: 650px;">
+            Servicios, herramientas y plataformas tecnológicas que utilizamos para garantizar estabilidad, seguridad y velocidad.
+        </p>
+        <div>
+            <a href="{{ url_for('nuevo_proveedor') }}" class="btn btn-verde btn-lg shadow-sm">
+                <i class="bi bi-truck me-2"></i>Registrar nuevo proveedor
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     TABLA DE PROVEEDORES
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-white p-4 border-bottom">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <h2 class="h4 fw-bold text-navy mb-1">Directorio de Proveedores</h2>
+                        <p class="text-muted small mb-0">Control y monitoreo de infraestructura y herramientas de terceros</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-navy text-white px-3 py-2 rounded-pill">
+                            <i class="bi bi-box-seam me-1"></i><span id="badgeTotalProveedores">{{ proveedores|length }}</span> Proveedores
+                        </span>
+                        <a href="{{ url_for('nuevo_proveedor') }}" class="btn btn-outline-brand btn-sm">
+                            <i class="bi bi-plus-lg me-1"></i>Nuevo Proveedor
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Buscador de Proveedores -->
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-8 col-lg-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">
+                                <i class="bi bi-search text-emerald"></i>
+                            </span>
+                            <input type="text" id="buscadorProveedores" class="form-control table-filter-control bg-light border-start-0 border-end-0 py-2"
+                                   data-filter-target=".fila-proveedor" data-filter-count="#contadorProveedoresVisibles" data-filter-clear="#btnLimpiarProveedores"
+                                   placeholder="Buscar por proveedor, tipo de servicio, sitio web o estado..."
+                                   autocomplete="off">
+                            <button class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" type="button" id="btnLimpiarProveedores" title="Borrar búsqueda">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-6 text-md-end">
+                        <small class="text-muted">
+                            Mostrando <strong id="contadorProveedoresVisibles" class="text-navy">{{ proveedores|length }}</strong> de {{ proveedores|length }} proveedores
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                {% if proveedores %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-table">
+                        <thead class="table-navy text-white">
+                            <tr>
+                                <th class="ps-4 py-3">ID</th>
+                                <th class="py-3">Proveedor</th>
+                                <th class="py-3">Tipo de Servicio</th>
+                                <th class="py-3">Sitio Web Oficial</th>
+                                <th class="py-3 text-center">Estado Operativo</th>
+                                <th class="py-3 text-center pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proveedor in proveedores %}
+                            <tr class="fila-proveedor"
+                                data-nombre="{{ proveedor.nombre }}"
+                                data-categoria="{{ proveedor.categoria_nombre }}"
+                                data-sitio="{{ proveedor.sitio }}"
+                                data-estado="{{ proveedor.estado_nombre }}">
+                                <td class="ps-4 py-3">
+                                    <span class="fw-bold text-navy font-monospace">{{ proveedor.id }}</span>
+                                </td>
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="avatar-circle">
+                                            <i class="bi bi-hdd-network"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-navy d-block">{{ proveedor.nombre }}</span>
+                                            <small class="text-muted">Infraestructura de desarrollo</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="fw-semibold text-dark">
+                                        <i class="bi bi-check2-circle text-emerald me-1"></i>{{ proveedor.categoria_nombre }}
+                                    </span>
+                                </td>
+                                <td class="py-3">
+                                    <a href="https://{{ proveedor.sitio.replace('https://', '').replace('http://', '') }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-emerald fw-semibold">
+                                        <i class="bi bi-link-45deg me-1"></i>{{ proveedor.sitio }}
+                                    </a>
+                                </td>
+                                <td class="py-3 text-center">
+                                    {% if proveedor.estado_nombre == "Activo" %}
+                                        <span class="badge badge-disponible px-3 py-2">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Activo
+                                        </span>
+                                    {% elif proveedor.estado_nombre == "Pendiente" %}
+                                        <span class="badge badge-proximamente px-3 py-2">
+                                            <i class="bi bi-hourglass-split me-1"></i>Pendiente
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-3 py-2">
+                                            <i class="bi bi-dash-circle me-1"></i>{{ proveedor.estado_nombre }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 text-center pe-4">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{{ url_for('editar_proveedor', id=proveedor.id) }}" class="btn btn-outline-primary btn-sm rounded-pill" title="Editar proveedor">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('eliminar_proveedor', id=proveedor.id) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a &quot;{{ proveedor.nombre }}&quot;?');" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" title="Eliminar proveedor">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación de Proveedores (10 por página) -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 border-top mt-3" id="contenedorPaginacionProveedores">
+                    <small class="text-muted">
+                        Mostrando <span id="contadorPaginacionProveedoresTexto" class="fw-semibold text-navy">1 - {{ 10 if proveedores|length > 10 else proveedores|length }}</span> de <span id="totalProveedoresPaginacion" class="fw-semibold text-navy">{{ proveedores|length }}</span> proveedores
+                    </small>
+                    <nav aria-label="Navegación de proveedores">
+                        <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionProveedores">
+                            <!-- Botones generados dinámicamente -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Estado sin resultados de búsqueda -->
+                <div id="sinResultadosProveedores" class="p-5 text-center d-none">
+                    <div class="mb-3">
+                        <i class="bi bi-search text-emerald" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-navy mb-1">No se encontraron proveedores</h5>
+                    <p class="text-muted small mb-3">No hay proveedores que coincidan con el término ingresado.</p>
+                    <button type="button" id="btnRestablecerProveedores" class="btn btn-outline-brand btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar búsqueda
+                    </button>
+                </div>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-truck text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="text-navy fw-bold">No existen proveedores registrados</h4>
+                    <p class="text-muted">Registra los servicios de infraestructura para comenzar.</p>
+                    <a href="{{ url_for('nuevo_proveedor') }}" class="btn btn-verde mt-2">
+                        <i class="bi bi-plus-lg me-1"></i>Registrar Primer Proveedor
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("buscadorProveedores");
+    const btnLimpiar = document.getElementById("btnLimpiarProveedores");
+    const btnReset = document.getElementById("btnRestablecerProveedores");
+    const todasLasFilas = Array.from(document.querySelectorAll(".fila-proveedor"));
+    const sinRes = document.getElementById("sinResultadosProveedores");
+    const contador = document.getElementById("contadorProveedoresVisibles");
+    const contadorPaginacionTexto = document.getElementById("contadorPaginacionProveedoresTexto");
+    const totalProveedoresPaginacion = document.getElementById("totalProveedoresPaginacion");
+    const listaBotones = document.getElementById("listaBotonesPaginacionProveedores");
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionProveedores");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let paginaActual = 1;
+    let filasFiltradas = [...todasLasFilas];
+
+    if (!todasLasFilas.length) return;
+
+    function normalizar(t) {
+        return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    function filtrarYPaginar(irAPagina = 1) {
+        const q = normalizar(input ? input.value : "");
+
+        filasFiltradas = todasLasFilas.filter(fila => {
+            const nombre = normalizar(fila.dataset.nombre);
+            const categoria = normalizar(fila.dataset.categoria);
+            const sitio = normalizar(fila.dataset.sitio);
+            const estado = normalizar(fila.dataset.estado);
+            return !q || nombre.includes(q) || categoria.includes(q) || sitio.includes(q) || estado.includes(q);
+        });
+
+        const totalRegistros = filasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalRegistros / REGISTROS_POR_PAGINA));
+        paginaActual = Math.min(Math.max(1, irAPagina), totalPaginas);
+
+        todasLasFilas.forEach(f => f.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
+
+        for (let i = inicio; i < fin; i++) {
+            filasFiltradas[i].classList.remove("d-none");
+        }
+
+        if (contador) contador.textContent = totalRegistros;
+        if (totalProveedoresPaginacion) totalProveedoresPaginacion.textContent = totalRegistros;
+        if (contadorPaginacionTexto) {
+            contadorPaginacionTexto.textContent = totalRegistros > 0 ? `${inicio + 1} - ${fin}` : "0 - 0";
+        }
+        if (sinRes) sinRes.classList.toggle("d-none", totalRegistros > 0);
+        if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", totalRegistros === 0);
+
+        renderizarBotones(totalPaginas);
+    }
+
+    function renderizarBotones(totalPaginas) {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        if (totalPaginas <= 1) {
+            if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", filasFiltradas.length <= 10);
+            return;
+        }
+        if (contenedorPaginacion) contenedorPaginacion.classList.remove("d-none");
+
+        const crearItem = (texto, pag, activo = false, deshabilitado = false) => {
+            const li = document.createElement("li");
+            li.className = `page-item ${activo ? 'active' : ''} ${deshabilitado ? 'disabled' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${texto}</button>`;
+            if (!deshabilitado && !activo) {
+                li.addEventListener("click", () => filtrarYPaginar(pag));
+            }
+            return li;
+        };
+
+        // Anterior
+        listaBotones.appendChild(crearItem("&laquo; Anterior", paginaActual - 1, false, paginaActual === 1));
+
+        if (totalPaginas <= 7) {
+            for (let p = 1; p <= totalPaginas; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+        } else {
+            listaBotones.appendChild(crearItem(1, 1, paginaActual === 1));
+
+            let start = Math.max(2, paginaActual - 1);
+            let end = Math.min(totalPaginas - 1, paginaActual + 1);
+
+            if (start > 2) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            for (let p = start; p <= end; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+
+            if (end < totalPaginas - 1) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            listaBotones.appendChild(crearItem(totalPaginas, totalPaginas, paginaActual === totalPaginas));
+        }
+
+        // Siguiente
+        listaBotones.appendChild(crearItem("Siguiente &raquo;", paginaActual + 1, false, paginaActual === totalPaginas));
+    }
+
+    if (input) input.addEventListener("input", () => filtrarYPaginar(1));
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener("click", () => {
+            if (input) input.value = "";
+            filtrarYPaginar(1);
+            if (input) input.focus();
+        });
+    }
+
+    if (btnReset) {
+        btnReset.addEventListener("click", () => {
+            if (input) input.value = "";
+            filtrarYPaginar(1);
+            if (input) input.focus();
+        });
+    }
+
+    filtrarYPaginar(1);
+});
+</script>
+{% endblock %}

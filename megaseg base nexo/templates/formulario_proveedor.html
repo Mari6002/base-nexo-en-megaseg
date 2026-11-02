@@ -1,0 +1,117 @@
+﻿{% extends "base.html" %}
+
+{% block titulo %}{{ 'Editar Proveedor' if editando else 'Registrar Proveedor' }} - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: FORMULARIO DE PROVEEDOR
+     ============================================================================== -->
+<section class="page-header py-4 text-white">
+    <div class="container text-center">
+        <h1 class="h3 fw-bold mb-1">{{ 'Editar Proveedor' if editando else 'Registrar Nuevo Proveedor' }}</h1>
+        <p class="text-light-emerald small mb-0">
+            {{ 'Modifica la información del proveedor o servicio externo' if editando else 'Agrega plataformas o proveedores de infraestructura tecnológica' }}
+        </p>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     FORMULARIO CON FLASK-WTF
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="card form-card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white p-4 border-bottom">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-icon-box">
+                                <i class="bi {{ 'bi-pencil-square' if editando else 'bi-truck' }}"></i>
+                            </div>
+                            <div>
+                                <h2 class="h5 fw-bold text-navy mb-0">{{ 'Modificar Datos' if editando else 'Datos del Proveedor' }}</h2>
+                                <small class="text-muted">Ingresa la información del servicio externo</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form method="POST" novalidate>
+                            <!-- Token CSRF -->
+                            {{ form.hidden_tag() }}
+
+                            <!-- 1. Nombre del Proveedor -->
+                            <div class="mb-3">
+                                {{ form.nombre.label(class="form-label fw-semibold text-navy small") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-hdd-network"></i></span>
+                                    {{ form.nombre(class="form-control" + (" is-invalid" if form.nombre.errors else ""), placeholder="Ej: AWS, Hostinger, Cloudflare", autocomplete="off") }}
+                                </div>
+                                {% for error in form.nombre.errors %}
+                                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- 2. Categoría (clave foránea hacia categorias_proveedor) -->
+                            <div class="mb-3">
+                                {{ form.categoria_id.label(class="form-label fw-semibold text-navy small") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-box"></i></span>
+                                    <select name="{{ form.categoria_id.name }}" id="{{ form.categoria_id.id }}" class="form-select{{ ' is-invalid' if form.categoria_id.errors else '' }}">
+                                        {% for value, label in form.categoria_id.choices %}
+                                        <option value="{{ value }}" {% if form.categoria_id.data == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% for error in form.categoria_id.errors %}
+                                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                                <small class="text-muted">¿No existe la categoría? <a href="{{ url_for('nueva_categoria_proveedor') }}">Créala aquí</a>.</small>
+                            </div>
+
+                            <!-- 3. Sitio Web Oficial -->
+                            <div class="mb-3">
+                                {{ form.sitio.label(class="form-label fw-semibold text-navy small") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-globe"></i></span>
+                                    {{ form.sitio(class="form-control" + (" is-invalid" if form.sitio.errors else ""), placeholder="Ej: hostinger.com, godaddy.com") }}
+                                </div>
+                                {% for error in form.sitio.errors %}
+                                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- 4. Estado Operativo (clave foránea hacia estados_proveedor) -->
+                            <div class="mb-4">
+                                {{ form.estado_id.label(class="form-label fw-semibold text-navy small") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-toggle2-on"></i></span>
+                                    <select name="{{ form.estado_id.name }}" id="{{ form.estado_id.id }}" class="form-select{{ ' is-invalid' if form.estado_id.errors else '' }}">
+                                        {% for value, label in form.estado_id.choices %}
+                                        <option value="{{ value }}" {% if form.estado_id.data == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                {% for error in form.estado_id.errors %}
+                                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Botones de Acción -->
+                            <div class="d-flex gap-2 pt-2">
+                                <a href="{{ url_for('proveedores') }}" class="btn btn-outline-secondary px-4">
+                                    <i class="bi bi-arrow-left me-1"></i>Volver
+                                </a>
+                                <button type="submit" class="btn btn-verde flex-grow-1 py-2">
+                                    <i class="bi {{ 'bi-check2-circle' if editando else 'bi-plus-lg' }} me-1"></i>
+                                    {{ 'Actualizar proveedor' if editando else 'Guardar proveedor' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

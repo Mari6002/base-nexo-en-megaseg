@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ 'Editar Tipo de Negocio' if editando else 'Registrar Tipo de Negocio' }} - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: FORMULARIO DE TIPO DE NEGOCIO
+     ============================================================================== -->
+<section class="page-header py-4 text-white">
+    <div class="container text-center">
+        <h1 class="h3 fw-bold mb-1">{{ 'Editar Tipo de Negocio' if editando else 'Registrar Nuevo Tipo de Negocio' }}</h1>
+        <p class="text-light-emerald small mb-0">
+            {{ 'Modifica el nombre de este tipo de negocio' if editando else 'Crea un nuevo tipo de negocio para clasificar clientes' }}
+        </p>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     FORMULARIO CON FLASK-WTF
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="card form-card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white p-4 border-bottom">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-icon-box">
+                                <i class="bi {{ 'bi-pencil-square' if editando else 'bi-tag' }}"></i>
+                            </div>
+                            <div>
+                                <h2 class="h5 fw-bold text-navy mb-0">{{ 'Modificar Tipo de Negocio' if editando else 'Datos del Tipo de Negocio' }}</h2>
+                                <small class="text-muted">Este nombre clasificará a los clientes del directorio</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form method="POST" novalidate>
+                            <!-- Token CSRF -->
+                            {{ form.hidden_tag() }}
+
+                            <!-- 1. Nombre del Tipo de Negocio -->
+                            <div class="mb-4">
+                                {{ form.nombre.label(class="form-label fw-semibold text-navy small") }}
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-tag"></i></span>
+                                    {{ form.nombre(class="form-control" + (" is-invalid" if form.nombre.errors else ""), placeholder="Ej: Panadería, Cafetería", autocomplete="off") }}
+                                </div>
+                                {% for error in form.nombre.errors %}
+                                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Botones de Acción -->
+                            <div class="d-flex gap-2 pt-2">
+                                <a href="{{ url_for('tipos_negocio') }}" class="btn btn-outline-secondary px-4">
+                                    <i class="bi bi-arrow-left me-1"></i>Volver
+                                </a>
+                                <button type="submit" class="btn btn-verde flex-grow-1 py-2">
+                                    <i class="bi {{ 'bi-check2-circle' if editando else 'bi-plus-lg' }} me-1"></i>
+                                    {{ 'Actualizar tipo de negocio' if editando else 'Guardar tipo de negocio' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

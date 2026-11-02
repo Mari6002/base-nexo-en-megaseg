@@ -1,0 +1,892 @@
+{% extends "base.html" %}
+
+{% block titulo %}Facturación y Cobranzas - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: GESTIÓN COMERCIAL Y COBRANZAS
+     ============================================================================== -->
+<section class="page-header py-5 text-white">
+    <div class="container text-center">
+        <span class="badge bg-emerald mb-2 px-3 py-2 text-uppercase fw-semibold tracking-wider">Gestión Comercial & Pagos</span>
+        <h1 class="display-5 fw-bold mb-3">Facturación & Control de Cobranzas</h1>
+        <p class="lead text-light-emerald mx-auto mb-4" style="max-width: 720px;">
+            Registra abonos y pagos parciales, emite comprobantes oficiales por cada pago y genera la factura fiscal final únicamente cuando el saldo pendiente llegue a $0,00.
+        </p>
+        {% if current_user.has_role('Administrador', 'Gestor de proyectos') %}
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="{{ url_for('nueva_factura', tipo='Factura') }}" class="btn btn-verde btn-lg shadow-sm">
+                <i class="bi bi-receipt me-2"></i>Nueva Factura / Venta
+            </a>
+            <a href="{{ url_for('nueva_factura', tipo='Cotizacion') }}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-file-earmark-text me-2"></i>Nueva Cotización
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- ==============================================================================
+     TABLA DE DOCUMENTOS COMERCIALES CON PAGINACIÓN AUTOMÁTICA (20 REGISTROS)
+     ============================================================================== -->
+<section class="py-4 py-md-5">
+    <div class="container">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-white p-4 border-bottom">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <h2 class="h4 fw-bold text-navy mb-1">Registro de Documentos Comerciales</h2>
+                        <p class="text-muted small mb-0">Control integral de ventas, amortizaciones, abonos recibidos, comprobantes y facturas finales</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-navy text-white px-3 py-2 rounded-pill">
+                            <i class="bi bi-archive me-1"></i><span id="badgeTotalFacturas">{{ facturas|length }}</span> Documentos
+                        </span>
+                        {% if current_user.has_role('Administrador', 'Gestor de proyectos') %}
+                        <a href="{{ url_for('nueva_factura') }}" class="btn btn-outline-brand btn-sm">
+                            <i class="bi bi-plus-lg me-1"></i>Nuevo Documento
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Buscador y Filtros de Facturación con Paginación Reactiva -->
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-5 col-lg-5">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">
+                                <i class="bi bi-search text-emerald"></i>
+                            </span>
+                            <input type="text" id="buscadorFacturas" class="form-control bg-light border-start-0 border-end-0 py-2"
+                                   placeholder="Buscar por N° documento, cliente o fecha..."
+                                   autocomplete="off">
+                            <button class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" type="button" id="btnLimpiarFacturas" title="Borrar búsqueda">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-lg-3">
+                        <select id="filtroTipoDoc" class="form-select form-select-sm rounded-pill py-2">
+                            <option value="">Todos los tipos</option>
+                            <option value="factura">Solo Facturas / Ventas</option>
+                            <option value="cotizacion">Solo Cotizaciones</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-lg-4 text-md-end">
+                        <small class="text-muted">
+                            Mostrando <strong id="contadorPaginacionTexto" class="text-navy">0 - 0</strong> de <strong id="contadorFacturasVisibles" class="text-navy">{{ facturas|length }}</strong> registros
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                {% if facturas %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-table" id="tablaFacturacionPrincipal">
+                        <thead>
+                            <tr>
+                                <th class="ps-3 py-3" style="min-width: 140px;">Documento</th>
+                                <th class="py-3" style="min-width: 180px;">Cliente / Razón Social</th>
+                                <th class="py-3 text-nowrap" style="min-width: 110px;">Fecha Emisión</th>
+                                <th class="py-3 text-end text-nowrap" style="min-width: 100px;">Total</th>
+                                <th class="py-3 text-end text-nowrap" style="min-width: 110px;">Total Abonado</th>
+                                <th class="py-3 text-end text-nowrap" style="min-width: 120px;">Saldo Pendiente</th>
+                                <th class="py-3 text-nowrap" style="min-width: 120px;">Fecha Límite</th>
+                                <th class="py-3" style="min-width: 140px;">Próxima Cuota</th>
+                                <th class="py-3 text-center" style="min-width: 110px;">Estado</th>
+                                <th class="py-3 text-center pe-3" style="min-width: 220px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaFacturas">
+                            {% for doc in facturas %}
+                            {% set total_obligacion = doc.total_con_interes if doc.total_con_interes is defined and doc.total_con_interes else doc.monto %}
+                            {% set saldo = doc.saldo_pendiente if doc.saldo_pendiente is defined else (total_obligacion - (doc.total_abonado or doc.anticipo or 0.0)) %}
+                            {% set es_pagada = (saldo <= 0 and doc.tipo != 'Cotizacion') %}
+                            
+                            <tr class="fila-factura"
+                                id="fila-doc-{{ doc.numero }}"
+                                data-numero="{{ doc.numero }}"
+                                data-cliente="{{ doc.cliente_nombre }}"
+                                data-fecha="{{ doc.fecha }}"
+                                data-tipo="{{ doc.tipo }}"
+                                data-estado="{{ doc.estado_nombre }}">
+                                
+                                <!-- Documento -->
+                                <td class="ps-3 py-3">
+                                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                                        {% if doc.tipo == 'Cotizacion' %}
+                                            <span class="badge bg-info text-dark fw-bold px-2 py-1">Cotización</span>
+                                        {% else %}
+                                            <span class="badge bg-navy text-white fw-bold px-2 py-1">Venta</span>
+                                        {% endif %}
+                                        <span class="fw-bold text-navy font-monospace">{{ doc.numero }}</span>
+                                    </div>
+                                    {% if doc.numero_factura %}
+                                        <div class="mt-1">
+                                            <small class="badge bg-light text-navy border font-monospace" title="Factura Fiscal Oficial">
+                                                <i class="bi bi-file-earmark-check-fill text-emerald me-1"></i>FAC: {{ doc.numero_factura }}
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Cliente -->
+                                <td class="py-3">
+                                    <span class="fw-bold text-dark d-block">{{ doc.cliente_nombre }}</span>
+                                    <small class="text-muted d-block font-monospace">CI: {{ doc.cliente_cedula }}</small>
+                                    {% if doc.servicios_conteo and doc.servicios_conteo > 0 %}
+                                        <small class="text-muted">{{ doc.servicios_conteo }} servicio(s) incluidos</small>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Fecha Emisión -->
+                                <td class="py-3 text-muted small text-nowrap">
+                                    <i class="bi bi-calendar3 me-1"></i>{{ doc.fecha }}
+                                </td>
+
+                                <!-- Total -->
+                                <td class="py-3 text-end text-nowrap">
+                                    <span class="fw-bold text-navy fs-6 font-monospace">
+                                        ${{ "%.2f"|format(total_obligacion) }}
+                                    </span>
+                                    {% if doc.monto_interes and doc.monto_interes > 0 %}
+                                        <small class="d-block text-muted" style="font-size: 0.7rem;">(incl. ${{ "%.2f"|format(doc.monto_interes) }} int.)</small>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Total Abonado / Anticipo -->
+                                <td class="py-3 text-end text-nowrap">
+                                    <span class="text-emerald fw-bold font-monospace">
+                                        ${{ "%.2f"|format(doc.total_abonado or doc.anticipo or 0.0) }}
+                                    </span>
+                                    {% if doc.pagos and doc.pagos|length > 0 %}
+                                        <small class="d-block text-muted" style="font-size: 0.72rem;">{{ doc.pagos|length }} abono(s)</small>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Saldo Pendiente (Diferencia Real) -->
+                                <td class="py-3 text-end text-nowrap">
+                                    {% if saldo > 0 %}
+                                        <span class="badge badge-saldo-pendiente px-2 py-1 font-monospace">
+                                            ${{ "%.2f"|format(saldo) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-saldo-liquidado px-2 py-1 font-monospace">
+                                            $0.00 (Liquidado)
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Fecha Límite de Pago -->
+                                <td class="py-3 text-nowrap small">
+                                    {% if doc.tipo != 'Cotizacion' %}
+                                        {% if doc.fecha_limite %}
+                                            <span class="text-dark fw-semibold font-monospace">
+                                                <i class="bi bi-calendar-event me-1 text-navy"></i>{{ doc.fecha_limite }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">{{ doc.validez or '15 días' }}</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Próxima Cuota -->
+                                <td class="py-3 small">
+                                    {% if doc.tipo != 'Cotizacion' %}
+                                        {% if saldo <= 0 %}
+                                            <span class="badge bg-light text-success border">
+                                                <i class="bi bi-check-all me-1"></i>Cancelado
+                                            </span>
+                                        {% elif doc.proxima_cuota_texto %}
+                                            <span class="d-block fw-semibold text-navy">{{ doc.proxima_cuota_texto }}</span>
+                                            {% if doc.proxima_cuota_fecha %}
+                                                <small class="text-muted d-block">Vence: {{ doc.proxima_cuota_fecha }}</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Por definir</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Estado -->
+                                <td class="py-3 text-center">
+                                    {% if doc.estado_nombre == "Pagada" or es_pagada %}
+                                        <span class="badge badge-disponible px-3 py-2">
+                                            <i class="bi bi-check-circle-fill me-1"></i>PAGADA
+                                        </span>
+                                    {% elif doc.estado_nombre == "Parcial" %}
+                                        <span class="badge badge-proximamente px-3 py-2 bg-warning text-dark">
+                                            <i class="bi bi-hourglass-split me-1"></i>PARCIAL
+                                        </span>
+                                    {% elif doc.estado_nombre in ["Pendiente", "En revision"] %}
+                                        <span class="badge badge-proximamente px-3 py-2">
+                                            <i class="bi bi-hourglass-split me-1"></i>{{ doc.estado_nombre|upper }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-vencida px-3 py-2">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ doc.estado_nombre|upper }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Acciones Separadas -->
+                                <td class="py-3 text-center pe-3">
+                                    <div class="d-inline-flex gap-1 flex-wrap justify-content-center">
+                                        
+                                        <!-- Acción 1: Registrar Abono (Solo para Factura / Venta con saldo > 0) -->
+                                        {% if doc.tipo != 'Cotizacion' and saldo > 0 and current_user.has_role('Administrador', 'Gestor de proyectos') %}
+                                        <button type="button" class="btn btn-verde btn-sm rounded-pill btn-abono-modal"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalRegistrarAbono"
+                                                data-numero="{{ doc.numero }}"
+                                                data-cliente="{{ doc.cliente_nombre }}"
+                                                data-total="{{ '%.2f'|format(total_obligacion) }}"
+                                                data-abonado="{{ '%.2f'|format(doc.total_abonado or doc.anticipo or 0.0) }}"
+                                                data-saldo="{{ '%.2f'|format(saldo) }}"
+                                                title="Registrar Abono o Pago Parcial">
+                                            <i class="bi bi-cash-coin me-1"></i>Abonar
+                                        </button>
+                                        {% endif %}
+
+                                        <!-- Acción 2: Ver Comprobante (De los abonos registrados uno por uno) -->
+                                        {% if doc.tipo != 'Cotizacion' and doc.comprobantes and doc.comprobantes|length > 0 %}
+                                            {% if doc.comprobantes|length == 1 %}
+                                                <a href="{{ url_for('ver_comprobante_pago', numero_comprobante=doc.comprobantes[0].numero_comprobante) }}"
+                                                   class="btn btn-outline-success btn-sm rounded-pill"
+                                                   title="Ver e imprimir Comprobante de Pago {{ doc.comprobantes[0].numero_comprobante }}">
+                                                    <i class="bi bi-receipt-cutoff me-1"></i>Comprobante
+                                                </a>
+                                            {% else %}
+                                                <div class="dropdown d-inline-block">
+                                                    <button class="btn btn-outline-success btn-sm rounded-pill dropdown-toggle"
+                                                            type="button"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-expanded="false"
+                                                            title="Ver los {{ doc.comprobantes|length }} comprobantes emitidos uno por uno">
+                                                        <i class="bi bi-receipt-cutoff me-1"></i>Recibos ({{ doc.comprobantes|length }})
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2" style="min-width: 250px;">
+                                                        <li class="dropdown-header text-uppercase small fw-bold text-navy px-3 py-1">
+                                                            <i class="bi bi-receipt me-1"></i>Comprobantes Emitidos
+                                                        </li>
+                                                        <li><hr class="dropdown-divider my-1"></li>
+                                                        {% for cp in doc.comprobantes %}
+                                                        <li>
+                                                            <a class="dropdown-item d-flex justify-content-between align-items-center gap-2 px-3 py-2"
+                                                               href="{{ url_for('ver_comprobante_pago', numero_comprobante=cp.numero_comprobante) }}"
+                                                               target="_blank">
+                                                                <div>
+                                                                    <span class="font-monospace fw-bold text-success d-block small">
+                                                                        <i class="bi bi-file-earmark-check me-1"></i>{{ cp.numero_comprobante }}
+                                                                    </span>
+                                                                    <small class="text-muted d-block" style="font-size: 0.72rem;">{{ cp.fecha }}</small>
+                                                                </div>
+                                                                <span class="badge bg-light text-dark font-monospace border">${{ "%.2f"|format(cp.monto_abonado) }}</span>
+                                                            </a>
+                                                        </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+
+                                        <!-- Acción 3: Ver Plan de Pagos / Cuotas -->
+                                        {% if doc.tipo != 'Cotizacion' and doc.cuotas and doc.cuotas|length > 0 %}
+                                        <button type="button" class="btn btn-outline-info btn-sm rounded-pill btn-ver-cuotas"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalPlanPagos"
+                                                data-numero="{{ doc.numero }}"
+                                                data-cliente="{{ doc.cliente_nombre }}"
+                                                data-cuotas='{{ doc.cuotas|tojson }}'
+                                                title="Ver Plan de Pagos / Cuotas">
+                                            <i class="bi bi-calendar3 me-1"></i>Cuotas
+                                        </button>
+                                        {% endif %}
+
+                                        <!-- Acción 4: Ver Factura Fiscal Final (SOLO HABILITADA CUANDO SALDO == 0) -->
+                                        {% if doc.tipo != 'Cotizacion' %}
+                                            {% if es_pagada %}
+                                                <a href="{{ url_for('ver_factura_fiscal', numero=doc.numero) }}"
+                                                   class="btn btn-navy text-white btn-sm rounded-pill shadow-sm"
+                                                   style="background-color: #0A2540 !important; color: #ffffff !important; border: 1px solid #0A2540 !important; font-weight: 600;"
+                                                   title="Ver e Imprimir Factura Fiscal Oficial">
+                                                    <i class="bi bi-file-earmark-check-fill me-1 text-white"></i>Factura
+                                                </a>
+                                            {% else %}
+                                                <button type="button" class="btn btn-sm rounded-pill"
+                                                        disabled
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-placement="top"
+                                                        style="background-color: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed;"
+                                                        title="La Factura Oficial se generará cuando el saldo sea $0.00 (Pendiente: ${{ '%.2f'|format(saldo) }})">
+                                                    <i class="bi bi-lock-fill me-1"></i>Factura
+                                                </button>
+                                            {% endif %}
+                                        {% else %}
+                                            <!-- Si es cotización, ver cotización -->
+                                            <a href="{{ url_for('ver_comprobante', numero=doc.numero) }}" class="btn btn-outline-info btn-sm rounded-pill" title="Ver Cotización Comercial">
+                                                <i class="bi bi-file-earmark-text me-1"></i>Cotización
+                                            </a>
+                                        {% endif %}
+
+                                        <!-- Botón Historial de Pagos -->
+                                        {% if doc.tipo != 'Cotizacion' and doc.pagos and doc.pagos|length > 0 %}
+                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill btn-ver-historial"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalHistorialPagos"
+                                                data-numero="{{ doc.numero }}"
+                                                data-cliente="{{ doc.cliente_nombre }}"
+                                                data-total="{{ '%.2f'|format(total_obligacion) }}"
+                                                data-abonado="{{ '%.2f'|format(doc.total_abonado or doc.anticipo or 0.0) }}"
+                                                data-saldo="{{ '%.2f'|format(saldo) }}"
+                                                data-pagos='{{ doc.pagos|tojson }}'
+                                                title="Ver Historial de Abonos">
+                                            <i class="bi bi-clock-history"></i>
+                                        </button>
+                                        {% endif %}
+
+                                        <!-- Editar (Admin y Gestor) -->
+                                        {% if current_user.has_role('Administrador', 'Gestor de proyectos') and current_user.has_permission('facturas.editar') %}
+                                        <a href="{{ url_for('editar_factura', numero=doc.numero) }}" class="btn btn-outline-primary btn-sm rounded-circle" title="Editar Documento">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        {% endif %}
+
+                                        <!-- Eliminar (Solo Admin) -->
+                                        {% if current_user.has_role('Administrador') and current_user.has_permission('facturas.eliminar') %}
+                                        <form method="POST" action="{{ url_for('eliminar_factura', numero=doc.numero) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este registro comercial?');" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle" title="Eliminar Registro">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Barra de Paginación Automática (Máximo 20 Registros por Página) -->
+                <div class="p-3 bg-light border-top d-flex justify-content-between align-items-center flex-wrap gap-2" id="contenedorPaginacionFacturas">
+                    <div class="small text-muted">
+                        Página <strong id="paginaActualTexto" class="text-navy">1</strong> de <strong id="totalPaginasTexto" class="text-navy">1</strong>
+                    </div>
+                    <nav aria-label="Navegación de páginas">
+                        <ul class="pagination pagination-sm mb-0" id="listaBotonesPaginacion">
+                            <!-- Inyectado por JS -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Estado sin resultados de búsqueda -->
+                <div id="sinResultadosFacturas" class="p-5 text-center d-none">
+                    <div class="mb-3">
+                        <i class="bi bi-search text-emerald" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-navy mb-1">No se encontraron documentos</h5>
+                    <p class="text-muted small mb-3">No hay facturas o cotizaciones que coincidan con los criterios de búsqueda.</p>
+                    <button type="button" id="btnRestablecerFacturas" class="btn btn-outline-brand btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar filtros
+                    </button>
+                </div>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-file-earmark-spreadsheet text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="text-navy fw-bold">No hay documentos registrados</h4>
+                    {% if current_user.has_role('Administrador', 'Gestor de proyectos') %}
+                    <p class="text-muted">Crea una factura o cotización para iniciar el registro comercial.</p>
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        <a href="{{ url_for('nueva_factura', tipo='Factura') }}" class="btn btn-verde">
+                            <i class="bi bi-receipt me-1"></i>Nueva Factura
+                        </a>
+                        <a href="{{ url_for('nueva_factura', tipo='Cotizacion') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-text me-1"></i>Nueva Cotización
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Aún no tienes facturas ni cotizaciones emitidas a tu nombre.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     MODAL 1: REGISTRAR ABONO / PAGO PARCIAL
+     ============================================================================== -->
+<div class="modal fade" id="modalRegistrarAbono" tabindex="-1" aria-labelledby="modalRegistrarAbonoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-navy text-white p-4">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0" id="modalRegistrarAbonoLabel">
+                        <i class="bi bi-cash-coin me-2 text-emerald"></i>Registrar Abono a Cuenta
+                    </h5>
+                    <small class="text-light-emerald" id="subtituloModalAbono">Documento: #000</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formRegistrarAbonoModal" method="POST" action="">
+                <div class="modal-body p-4">
+                    <!-- Resumen del Estado de Cuenta Actual -->
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="row g-2 text-center">
+                            <div class="col-4 border-end">
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">TOTAL OBLIGACIÓN</small>
+                                <span class="fw-bold text-navy font-monospace fs-7" id="modalTotalDeuda">$0.00</span>
+                            </div>
+                            <div class="col-4 border-end">
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">TOTAL ABONADO</small>
+                                <span class="fw-bold text-emerald font-monospace fs-7" id="modalTotalAbonado">$0.00</span>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">SALDO PENDIENTE</small>
+                                <span class="fw-bold text-danger font-monospace fs-7" id="modalSaldoPendiente">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Monto del Abono -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-navy small mb-1">
+                                Monto a Abonar ($ USD) <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">$</span>
+                                <input type="number" step="0.01" min="0.01" class="form-control form-control-lg fw-bold font-monospace"
+                                       id="inputMontoAbono" name="monto" placeholder="0.00" required autocomplete="off">
+                            </div>
+                            <div id="alertaMontoExcedido" class="text-danger small mt-1 d-none">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>El abono no puede ser mayor al saldo pendiente.
+                            </div>
+                        </div>
+
+                        <!-- Fecha de Pago -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-navy small mb-1">Fecha del Pago</label>
+                            <input type="date" class="form-control" id="inputFechaPagoAbono" name="fecha" required>
+                        </div>
+
+                        <!-- Método de Pago -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-navy small mb-1">Método de Pago</label>
+                            <select class="form-select" id="selectMetodoPagoAbono" name="metodo_pago">
+                                <option value="Transferencia bancaria">Transferencia bancaria</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta de débito">Tarjeta de débito</option>
+                                <option value="Tarjeta de crédito">Tarjeta de crédito</option>
+                                <option value="Depósito bancario">Depósito bancario</option>
+                            </select>
+                        </div>
+
+                        <!-- Referencia / N° Comprobante Bancario -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-navy small mb-1">Referencia / N° Transacción (Opcional)</label>
+                            <input type="text" class="form-control font-monospace" id="inputReferenciaAbono" name="referencia" placeholder="Ej: Transf. Pichincha #12345678">
+                        </div>
+
+                        <!-- Notas / Observaciones -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-navy small mb-1">Notas / Observaciones</label>
+                            <input type="text" class="form-control" id="inputNotasAbono" name="notas" placeholder="Ej: Abono de cuota correspondiente al mes">
+                        </div>
+
+                        <!-- Simulación del Nuevo Saldo -->
+                        <div class="col-12">
+                            <div class="p-2 rounded-2 border d-flex justify-content-between align-items-center bg-light">
+                                <small class="text-muted fw-semibold">Saldo restante después de este abono:</small>
+                                <strong class="text-navy font-monospace" id="modalNuevoSaldoRestante">$0.00</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-verde btn-sm fw-semibold" id="btnConfirmarAbono">
+                        <i class="bi bi-check2-circle me-1"></i>Registrar Pago y Emitir Comprobante
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================================================
+     MODAL 2: PLAN DE PAGOS Y CUOTAS DE AMORTIZACIÓN
+     ============================================================================== -->
+<div class="modal fade" id="modalPlanPagos" tabindex="-1" aria-labelledby="modalPlanPagosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-navy text-white p-4">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0" id="modalPlanPagosLabel">
+                        <i class="bi bi-calendar3 me-2 text-mint"></i>Plan de Amortización & Cuotas
+                    </h5>
+                    <small class="text-light-emerald" id="subtituloModalCuotas">Documento: #000</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border text-center" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th># Cuota</th>
+                                <th>Fecha Vencimiento</th>
+                                <th>Monto Cuota ($)</th>
+                                <th>Monto Pagado ($)</th>
+                                <th>Saldo Cuota ($)</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaCuotasModal">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================================================
+     MODAL 3: HISTORIAL DE ABONOS Y COMPROBANTES DE PAGO
+     ============================================================================== -->
+<div class="modal fade" id="modalHistorialPagos" tabindex="-1" aria-labelledby="modalHistorialPagosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-navy text-white p-4">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0" id="modalHistorialPagosLabel">
+                        <i class="bi bi-clock-history me-2 text-emerald"></i>Historial de Pagos & Comprobantes
+                    </h5>
+                    <small class="text-light-emerald" id="subtituloModalHistorial">Documento: #000</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border text-center" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th># Abono</th>
+                                <th>Fecha</th>
+                                <th>Monto ($)</th>
+                                <th>Método de Pago</th>
+                                <th>Referencia</th>
+                                <th>N° Comprobante</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaHistorialModal">
+                            <!-- Inyectado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==============================================================================
+     JAVASCRIPT: PAGINACIÓN AUTOMÁTICA (10 REGISTROS), FILTROS Y MODALES
+     ============================================================================== -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("buscadorFacturas");
+    const filtroTipo = document.getElementById("filtroTipoDoc");
+    const btnLimpiar = document.getElementById("btnLimpiarFacturas");
+    const btnReset = document.getElementById("btnRestablecerFacturas");
+    const todasLasFilas = Array.from(document.querySelectorAll(".fila-factura"));
+    const sinRes = document.getElementById("sinResultadosFacturas");
+    const contadorVisibles = document.getElementById("contadorFacturasVisibles");
+    const contadorPaginacionTexto = document.getElementById("contadorPaginacionTexto");
+    const paginaActualTexto = document.getElementById("paginaActualTexto");
+    const totalPaginasTexto = document.getElementById("totalPaginasTexto");
+    const listaBotonesPaginacion = document.getElementById("listaBotonesPaginacion");
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionFacturas");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let paginaActual = 1;
+    let filasFiltradas = [...todasLasFilas];
+
+    function normalizar(t) {
+        return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    // Filtrar elementos y reiniciar paginación
+    function filtrarYPaginar(irAPagina = 1) {
+        const q = normalizar(input ? input.value : "");
+        const tipoSel = normalizar(filtroTipo ? filtroTipo.value : "");
+
+        filasFiltradas = todasLasFilas.filter(fila => {
+            const numero = normalizar(fila.dataset.numero);
+            const cliente = normalizar(fila.dataset.cliente);
+            const fecha = normalizar(fila.dataset.fecha);
+            const tipo = normalizar(fila.dataset.tipo);
+            const estado = normalizar(fila.dataset.estado);
+
+            const coincideTexto = !q || numero.includes(q) || cliente.includes(q) || fecha.includes(q) || estado.includes(q);
+            const coincideTipo = !tipoSel || tipo.includes(tipoSel);
+
+            return coincideTexto && coincideTipo;
+        });
+
+        const totalRegistros = filasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalRegistros / REGISTROS_POR_PAGINA));
+
+        paginaActual = Math.min(Math.max(1, irAPagina), totalPaginas);
+
+        // Ocultar todas primero
+        todasLasFilas.forEach(f => f.classList.add("d-none"));
+
+        // Mostrar solo los de la página actual
+        const inicioIndice = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const finIndice = Math.min(inicioIndice + REGISTROS_POR_PAGINA, totalRegistros);
+
+        for (let i = inicioIndice; i < finIndice; i++) {
+            filasFiltradas[i].classList.remove("d-none");
+        }
+
+        // Actualizar contadores
+        if (contadorVisibles) contadorVisibles.textContent = totalRegistros;
+        if (contadorPaginacionTexto) {
+            contadorPaginacionTexto.textContent = totalRegistros > 0 ? `${inicioIndice + 1} - ${finIndice}` : "0 - 0";
+        }
+        if (paginaActualTexto) paginaActualTexto.textContent = paginaActual;
+        if (totalPaginasTexto) totalPaginasTexto.textContent = totalPaginas;
+        if (sinRes) sinRes.classList.toggle("d-none", totalRegistros > 0);
+        if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", totalRegistros === 0);
+
+        renderizarBotonesPaginacion(totalPaginas);
+    }
+
+    // Renderizar botones de paginación (Anterior, números, Siguiente)
+    function renderizarBotonesPaginacion(totalPaginas) {
+        if (!listaBotonesPaginacion) return;
+        listaBotonesPaginacion.innerHTML = "";
+
+        // Botón Anterior
+        const liAnt = document.createElement("li");
+        liAnt.className = `page-item ${paginaActual === 1 ? 'disabled' : ''}`;
+        liAnt.innerHTML = `<button class="page-link" type="button" aria-label="Anterior">&laquo; Anterior</button>`;
+        liAnt.addEventListener("click", () => {
+            if (paginaActual > 1) filtrarYPaginar(paginaActual - 1);
+        });
+        listaBotonesPaginacion.appendChild(liAnt);
+
+        // Números de Página
+        for (let p = 1; p <= totalPaginas; p++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${p === paginaActual ? 'active' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${p}</button>`;
+            li.addEventListener("click", () => filtrarYPaginar(p));
+            listaBotonesPaginacion.appendChild(li);
+        }
+
+        // Botón Siguiente
+        const liSig = document.createElement("li");
+        liSig.className = `page-item ${paginaActual === totalPaginas ? 'disabled' : ''}`;
+        liSig.innerHTML = `<button class="page-link" type="button" aria-label="Siguiente">Siguiente &raquo;</button>`;
+        liSig.addEventListener("click", () => {
+            if (paginaActual < totalPaginas) filtrarYPaginar(paginaActual + 1);
+        });
+        listaBotonesPaginacion.appendChild(liSig);
+    }
+
+    if (input) input.addEventListener("input", () => filtrarYPaginar(1));
+    if (filtroTipo) filtroTipo.addEventListener("change", () => filtrarYPaginar(1));
+
+    function limpiar() {
+        if (input) input.value = "";
+        if (filtroTipo) filtroTipo.value = "";
+        filtrarYPaginar(1);
+        if (input) input.focus();
+    }
+
+    if (btnLimpiar) btnLimpiar.addEventListener("click", limpiar);
+    if (btnReset) btnReset.addEventListener("click", limpiar);
+
+    // ==============================================================================
+    // MODAL DE REGISTRAR ABONO: Configuración dinámica y validaciones en vivo
+    // ==============================================================================
+    const modalAbono = document.getElementById("modalRegistrarAbono");
+    const formAbono = document.getElementById("formRegistrarAbonoModal");
+    const subtituloModalAbono = document.getElementById("subtituloModalAbono");
+    const modalTotalDeuda = document.getElementById("modalTotalDeuda");
+    const modalTotalAbonado = document.getElementById("modalTotalAbonado");
+    const modalSaldoPendiente = document.getElementById("modalSaldoPendiente");
+    const inputMontoAbono = document.getElementById("inputMontoAbono");
+    const alertaMontoExcedido = document.getElementById("alertaMontoExcedido");
+    const modalNuevoSaldoRestante = document.getElementById("modalNuevoSaldoRestante");
+    const btnConfirmarAbono = document.getElementById("btnConfirmarAbono");
+    const inputFechaPagoAbono = document.getElementById("inputFechaPagoAbono");
+
+    let saldoMaximoAbono = 0;
+
+    document.querySelectorAll(".btn-abono-modal").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const numero = this.dataset.numero;
+            const cliente = this.dataset.cliente;
+            const total = parseFloat(this.dataset.total) || 0;
+            const abonado = parseFloat(this.dataset.abonado) || 0;
+            const saldo = parseFloat(this.dataset.saldo) || 0;
+
+            saldoMaximoAbono = saldo;
+            formAbono.action = `/facturacion/abono/${numero}`;
+            subtituloModalAbono.textContent = `Documento: #${numero} | Cliente: ${cliente}`;
+            modalTotalDeuda.textContent = `$${total.toFixed(2)}`;
+            modalTotalAbonado.textContent = `$${abonado.toFixed(2)}`;
+            modalSaldoPendiente.textContent = `$${saldo.toFixed(2)}`;
+
+            inputMontoAbono.value = "";
+            inputMontoAbono.max = saldo.toFixed(2);
+            modalNuevoSaldoRestante.textContent = `$${saldo.toFixed(2)}`;
+            alertaMontoExcedido.classList.add("d-none");
+            btnConfirmarAbono.disabled = false;
+
+            if (inputFechaPagoAbono && !inputFechaPagoAbono.value) {
+                inputFechaPagoAbono.value = new Date().toISOString().split("T")[0];
+            }
+        });
+    });
+
+    if (inputMontoAbono) {
+        inputMontoAbono.addEventListener("input", function () {
+            const ingresado = parseFloat(this.value) || 0;
+            const restante = Math.max(0, saldoMaximoAbono - ingresado);
+            modalNuevoSaldoRestante.textContent = `$${restante.toFixed(2)}`;
+
+            if (ingresado > saldoMaximoAbono) {
+                alertaMontoExcedido.classList.remove("d-none");
+                btnConfirmarAbono.disabled = true;
+            } else if (ingresado <= 0) {
+                alertaMontoExcedido.classList.add("d-none");
+                btnConfirmarAbono.disabled = true;
+            } else {
+                alertaMontoExcedido.classList.add("d-none");
+                btnConfirmarAbono.disabled = false;
+            }
+        });
+    }
+
+    // ==============================================================================
+    // MODAL DE PLAN DE PAGOS (CUOTAS)
+    // ==============================================================================
+    const subtituloModalCuotas = document.getElementById("subtituloModalCuotas");
+    const cuerpoTablaCuotasModal = document.getElementById("cuerpoTablaCuotasModal");
+
+    document.querySelectorAll(".btn-ver-cuotas").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const numero = this.dataset.numero;
+            const cliente = this.dataset.cliente;
+            subtituloModalCuotas.textContent = `Documento: #${numero} | Cliente: ${cliente}`;
+
+            let cuotas = [];
+            try {
+                cuotas = JSON.parse(this.dataset.cuotas || "[]");
+            } catch (e) {
+                cuotas = [];
+            }
+
+            cuerpoTablaCuotasModal.innerHTML = "";
+            if (!cuotas.length) {
+                cuerpoTablaCuotasModal.innerHTML = `<tr><td colspan="6" class="text-muted p-3">No hay cuotas registradas para este documento.</td></tr>`;
+                return;
+            }
+
+            cuotas.forEach(c => {
+                const tr = document.createElement("tr");
+                let badgeEstado = '<span class="badge bg-secondary">Pendiente</span>';
+                if (c.estado === 'Pagada') {
+                    badgeEstado = '<span class="badge badge-disponible">Pagada</span>';
+                } else if (c.estado === 'Parcial') {
+                    badgeEstado = '<span class="badge badge-proximamente bg-warning text-dark">Parcial</span>';
+                }
+                tr.innerHTML = `
+                    <td class="fw-bold">Cuota #${c.numero_cuota}</td>
+                    <td>${c.fecha_vencimiento}</td>
+                    <td class="fw-bold font-monospace">$${parseFloat(c.valor_cuota).toFixed(2)}</td>
+                    <td class="text-emerald font-monospace">$${parseFloat(c.monto_pagado || 0).toFixed(2)}</td>
+                    <td class="text-danger font-monospace">$${parseFloat(c.saldo_cuota).toFixed(2)}</td>
+                    <td>${badgeEstado}</td>
+                `;
+                cuerpoTablaCuotasModal.appendChild(tr);
+            });
+        });
+    });
+
+    // ==============================================================================
+    // MODAL DE HISTORIAL DE PAGOS
+    // ==============================================================================
+    const subtituloModalHistorial = document.getElementById("subtituloModalHistorial");
+    const cuerpoTablaHistorialModal = document.getElementById("cuerpoTablaHistorialModal");
+
+    document.querySelectorAll(".btn-ver-historial").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const numero = this.dataset.numero;
+            const cliente = this.dataset.cliente;
+            subtituloModalHistorial.textContent = `Documento: #${numero} | Cliente: ${cliente}`;
+
+            let pagos = [];
+            try {
+                pagos = JSON.parse(this.dataset.pagos || "[]");
+            } catch (e) {
+                pagos = [];
+            }
+
+            cuerpoTablaHistorialModal.innerHTML = "";
+            if (!pagos.length) {
+                cuerpoTablaHistorialModal.innerHTML = `<tr><td colspan="7" class="text-muted p-3">Aún no hay abonos registrados para este documento.</td></tr>`;
+                return;
+            }
+
+            pagos.forEach(p => {
+                const tr = document.createElement("tr");
+                const compBtn = p.numero_comprobante ?
+                    `<a href="/facturacion/comprobante-pago/${p.numero_comprobante}" class="btn btn-sm btn-outline-success rounded-pill" target="_blank" title="Imprimir Comprobante"><i class="bi bi-printer me-1"></i>Ver</a>` :
+                    `<span class="text-muted">-</span>`;
+
+                tr.innerHTML = `
+                    <td class="fw-bold">Pago #${p.numero_pago}</td>
+                    <td>${p.fecha}</td>
+                    <td class="fw-bold text-emerald font-monospace">$${parseFloat(p.monto).toFixed(2)}</td>
+                    <td>${p.metodo_pago || 'Transferencia'}</td>
+                    <td class="font-monospace text-muted small">${p.referencia || '-'}</td>
+                    <td class="font-monospace fw-semibold text-navy">${p.numero_comprobante || '-'}</td>
+                    <td>${compBtn}</td>
+                `;
+                cuerpoTablaHistorialModal.appendChild(tr);
+            });
+        });
+    });
+
+    // Inicializar tooltips de Bootstrap
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Ejecutar paginación inicial
+    filtrarYPaginar(1);
+});
+</script>
+{% endblock %}

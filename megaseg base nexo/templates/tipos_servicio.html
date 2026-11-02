@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block titulo %}Categorías de Servicio - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: CATEGORÍAS DE SERVICIO
+     ============================================================================== -->
+<section class="page-header py-5 text-white">
+    <div class="container text-center">
+        <span class="badge bg-emerald mb-2 px-3 py-2 text-uppercase fw-semibold tracking-wider">Catálogo</span>
+        <h1 class="display-5 fw-bold mb-3">Categorías de Servicio</h1>
+        <p class="lead text-light-emerald mx-auto mb-4" style="max-width: 650px;">
+            Organiza el catálogo de servicios agrupándolos por tipo de solución que ofrece la empresa.
+        </p>
+        <div>
+            <a href="{{ url_for('nuevo_tipo_servicio') }}" class="btn btn-verde btn-lg shadow-sm">
+                <i class="bi bi-collection me-2"></i>Registrar nueva categoría
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     TABLA DE CATEGORÍAS
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-white p-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h2 class="h4 fw-bold text-navy mb-1">Listado de Categorías</h2>
+                    <p class="text-muted small mb-0">Cada servicio del catálogo pertenece a una de estas categorías</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-navy text-white px-3 py-2 rounded-pill">
+                        <i class="bi bi-collection me-1"></i>{{ tipos|length }} Categorías
+                    </span>
+                    <a href="{{ url_for('nuevo_tipo_servicio') }}" class="btn btn-outline-brand btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>Nueva Categoría
+                    </a>
+                    <a href="{{ url_for('servicios') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i>Volver al catálogo
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                {% if tipos %}
+                <div class="p-4 border-bottom">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0 rounded-start-pill ps-3">
+                            <i class="bi bi-search text-emerald"></i>
+                        </span>
+                        <input type="text" id="buscadorTiposServicio" class="form-control border-start-0 border-end-0 py-2"
+                               placeholder="Buscar categoría de servicio..." autocomplete="off">
+                        <button type="button" id="btnLimpiarTiposServicio" class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" title="Limpiar búsqueda">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted d-block mt-2">Mostrando <strong id="contadorTiposServicio">{{ tipos|length }}</strong> de {{ tipos|length }} categorías.</small>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-table">
+                        <thead class="table-navy text-white">
+                            <tr>
+                                <th class="ps-4 py-3">Categoría</th>
+                                <th class="py-3 text-center pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tipo in tipos %}
+                            <tr class="fila-tipo-servicio" data-nombre="{{ tipo.nombre }}">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="avatar-circle">
+                                            <i class="bi bi-collection"></i>
+                                        </div>
+                                        <span class="fw-bold text-navy d-block">{{ tipo.nombre }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 text-center pe-4">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{{ url_for('editar_tipo_servicio', id=tipo.id) }}" class="btn btn-outline-primary btn-sm rounded-pill" title="Editar categoría">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('eliminar_tipo_servicio', id=tipo.id) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar la categoría &quot;{{ tipo.nombre }}&quot;?');" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" title="Eliminar categoría">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación de Categorías de Servicio (10 por página) -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 border-top" id="contenedorPaginacionTiposServicio">
+                    <small class="text-muted">
+                        Mostrando <span id="contadorPaginacionTiposServicioTexto" class="fw-semibold text-navy">1 - {{ 10 if tipos|length > 10 else tipos|length }}</span> de <span id="totalTiposServicioPaginacion" class="fw-semibold text-navy">{{ tipos|length }}</span> registros
+                    </small>
+                    <nav aria-label="Navegación de categorías de servicio">
+                        <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionTiposServicio">
+                            <!-- Botones generados dinámicamente -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <div id="sinResultadosTiposServicio" class="p-4 text-center d-none">
+                    <i class="bi bi-search text-muted display-6 mb-2 d-block"></i>
+                    <p class="text-muted mb-0">No se encontraron categorías de servicio con el criterio ingresado.</p>
+                </div>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-collection text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="text-navy fw-bold">No existen categorías registradas</h4>
+                    <p class="text-muted">Crea una categoría antes de registrar servicios.</p>
+                    <a href="{{ url_for('nuevo_tipo_servicio') }}" class="btn btn-verde mt-2">
+                        <i class="bi bi-plus-lg me-1"></i>Registrar Primera Categoría
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("buscadorTiposServicio");
+    const btnLimpiar = document.getElementById("btnLimpiarTiposServicio");
+    const todasLasFilas = Array.from(document.querySelectorAll(".fila-tipo-servicio"));
+    const sinRes = document.getElementById("sinResultadosTiposServicio");
+    const contador = document.getElementById("contadorTiposServicio");
+    const contadorPaginacionTexto = document.getElementById("contadorPaginacionTiposServicioTexto");
+    const totalPaginacion = document.getElementById("totalTiposServicioPaginacion");
+    const listaBotones = document.getElementById("listaBotonesPaginacionTiposServicio");
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionTiposServicio");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let paginaActual = 1;
+    let filasFiltradas = [...todasLasFilas];
+
+    if (!todasLasFilas.length) return;
+
+    function normalizar(t) {
+        return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    function filtrarYPaginar(irAPagina = 1) {
+        const q = normalizar(input ? input.value : "");
+
+        filasFiltradas = todasLasFilas.filter(fila => {
+            const nombre = normalizar(fila.dataset.nombre);
+            return !q || nombre.includes(q);
+        });
+
+        const totalRegistros = filasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalRegistros / REGISTROS_POR_PAGINA));
+        paginaActual = Math.min(Math.max(1, irAPagina), totalPaginas);
+
+        todasLasFilas.forEach(f => f.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
+
+        for (let i = inicio; i < fin; i++) {
+            filasFiltradas[i].classList.remove("d-none");
+        }
+
+        if (contador) contador.textContent = totalRegistros;
+        if (totalPaginacion) totalPaginacion.textContent = totalRegistros;
+        if (contadorPaginacionTexto) {
+            contadorPaginacionTexto.textContent = totalRegistros > 0 ? `${inicio + 1} - ${fin}` : "0 - 0";
+        }
+        if (sinRes) sinRes.classList.toggle("d-none", totalRegistros > 0);
+        if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", totalRegistros === 0);
+
+        renderizarBotones(totalPaginas);
+    }
+
+    function renderizarBotones(totalPaginas) {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        if (totalPaginas <= 1) {
+            if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", filasFiltradas.length <= 10);
+            return;
+        }
+        if (contenedorPaginacion) contenedorPaginacion.classList.remove("d-none");
+
+        const crearItem = (texto, pag, activo = false, deshabilitado = false) => {
+            const li = document.createElement("li");
+            li.className = `page-item ${activo ? 'active' : ''} ${deshabilitado ? 'disabled' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${texto}</button>`;
+            if (!deshabilitado && !activo) {
+                li.addEventListener("click", () => filtrarYPaginar(pag));
+            }
+            return li;
+        };
+
+        // Anterior
+        listaBotones.appendChild(crearItem("&laquo; Anterior", paginaActual - 1, false, paginaActual === 1));
+
+        if (totalPaginas <= 7) {
+            for (let p = 1; p <= totalPaginas; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+        } else {
+            listaBotones.appendChild(crearItem(1, 1, paginaActual === 1));
+
+            let start = Math.max(2, paginaActual - 1);
+            let end = Math.min(totalPaginas - 1, paginaActual + 1);
+
+            if (start > 2) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            for (let p = start; p <= end; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+
+            if (end < totalPaginas - 1) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            listaBotones.appendChild(crearItem(totalPaginas, totalPaginas, paginaActual === totalPaginas));
+        }
+
+        // Siguiente
+        listaBotones.appendChild(crearItem("Siguiente &raquo;", paginaActual + 1, false, paginaActual === totalPaginas));
+    }
+
+    if (input) input.addEventListener("input", () => filtrarYPaginar(1));
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener("click", () => {
+            if (input) input.value = "";
+            filtrarYPaginar(1);
+            if (input) input.focus();
+        });
+    }
+
+    filtrarYPaginar(1);
+});
+</script>
+{% endblock %}

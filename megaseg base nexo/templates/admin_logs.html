@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block titulo %}Logs de Auditoría - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<section class="page-header py-4 text-white">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge bg-danger text-white px-3 py-1 mb-2 text-uppercase fw-semibold">
+                    <i class="bi bi-shield-lock me-1"></i>Seguridad y Auditoría
+                </span>
+                <h1 class="h3 fw-bold mb-1">Registro de Actividad y Logs</h1>
+                <p class="text-light-emerald small mb-0">
+                    Historial cronológico de eventos, autenticaciones y modificaciones en el sistema
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('admin_usuarios') }}" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-people me-1"></i>Volver a Usuarios
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <h2 class="h5 fw-bold text-navy mb-1">Eventos Recientes del Sistema</h2>
+                    <small class="text-muted">Rastreo de direcciones IP, usuarios y operaciones críticas</small>
+                </div>
+                <div>
+                    <small class="text-muted">
+                        Mostrando <strong id="contadorLogsVisibles" class="text-navy">{{ logs|length }}</strong> de {{ logs|length }} registros
+                    </small>
+                </div>
+            </div>
+
+            <!-- Buscador de Logs -->
+            <div class="row g-2 align-items-center mb-3">
+                <form method="get" class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Fecha desde</label>
+                    <input type="date" name="fecha_desde" class="form-control form-control-sm" value="{{ filtros.fecha_desde }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Fecha hasta</label>
+                    <input type="date" name="fecha_hasta" class="form-control form-control-sm" value="{{ filtros.fecha_hasta }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Hora desde</label>
+                    <input type="time" name="hora_desde" class="form-control form-control-sm" value="{{ filtros.hora_desde }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Hora hasta</label>
+                    <input type="time" name="hora_hasta" class="form-control form-control-sm" value="{{ filtros.hora_hasta }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Persona</label>
+                    <input type="search" name="persona" class="form-control form-control-sm" value="{{ filtros.persona }}" placeholder="Usuario">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Acción</label>
+                    <select name="accion" class="form-select form-select-sm">
+                        <option value="">Todas las acciones</option>
+                        {% for accion in acciones_disponibles %}
+                        <option value="{{ accion }}" {% if filtros.accion == accion %}selected{% endif %}>{{ accion }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">IP</label>
+                    <input type="search" name="ip" class="form-control form-control-sm" value="{{ filtros.ip }}" placeholder="Dirección IP">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">Detalles</label>
+                    <input type="search" name="detalles" class="form-control form-control-sm" value="{{ filtros.detalles }}" placeholder="Texto del evento">
+                </div>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button class="btn btn-verde btn-sm flex-grow-1" type="submit">Filtrar</button>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin_logs') }}">Limpiar</a>
+                </div>
+                </form>
+                <div class="col-md-7 col-lg-6 d-none">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">
+                            <i class="bi bi-search text-emerald"></i>
+                        </span>
+                        <input type="text" id="buscadorLogs" class="form-control bg-light border-start-0 border-end-0 py-2"
+                               placeholder="Buscar por usuario, acción, IP o detalles..."
+                               autocomplete="off">
+                        <button class="btn btn-light border-start-0 rounded-end-pill pe-3 text-muted" type="button" id="btnLimpiarLogs" title="Borrar búsqueda">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-muted text-uppercase">
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Usuario</th>
+                                <th>Acción Realizada</th>
+                                <th>Dirección IP</th>
+                                <th>Detalles del Evento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in logs %}
+                                <tr class="fila-log"
+                                    data-usuario="{{ l.usuario_nombre or '' }}"
+                                    data-accion="{{ l.accion or '' }}"
+                                    data-ip="{{ l.ip or '' }}"
+                                    data-detalles="{{ l.detalles or '' }}">
+                                    <td class="text-muted small">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        {{ l.fecha.strftime('%d/%m/%Y %H:%M:%S') if l.fecha else 'N/A' }}
+                                    </td>
+                                    <td class="fw-semibold text-navy">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <i class="bi bi-person text-muted"></i>
+                                            <span>{{ l.usuario_nombre or 'Sistema/Anónimo' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if 'LOGIN' in l.accion %}bg-success-subtle text-success border border-success-subtle{% elif 'ERROR' in l.accion or 'FALLIDO' in l.accion %}bg-danger-subtle text-danger border border-danger-subtle{% elif 'APROBAR' in l.accion %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %} rounded-pill px-2 py-1">
+                                            {{ l.accion }}
+                                        </span>
+                                    </td>
+                                    <td class="font-monospace small text-muted">
+                                        {{ l.ip or '127.0.0.1' }}
+                                    </td>
+                                    <td class="small text-muted">
+                                        {{ l.detalles or '-' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación de Logs (10 por página) -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 border-top mt-3" id="contenedorPaginacionLogs">
+                    <small class="text-muted">
+                        Mostrando <span id="contadorPaginacionLogsTexto" class="fw-semibold text-navy">1 - {{ 10 if logs|length > 10 else logs|length }}</span> de <span id="totalLogsPaginacion" class="fw-semibold text-navy">{{ logs|length }}</span> registros
+                    </small>
+                    <nav aria-label="Navegación de logs">
+                        <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionLogs">
+                            <!-- Botones generados dinámicamente -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- Estado sin resultados de búsqueda -->
+                <div id="sinResultadosLogs" class="p-4 text-center d-none">
+                    <div class="mb-2">
+                        <i class="bi bi-search text-emerald" style="font-size: 2rem;"></i>
+                    </div>
+                    <h6 class="fw-bold text-navy mb-1">No se encontraron eventos</h6>
+                    <p class="text-muted small mb-2">No hay registros de auditoría que coincidan con la búsqueda.</p>
+                    <button type="button" id="btnRestablecerLogs" class="btn btn-outline-brand btn-sm rounded-pill px-3">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar búsqueda
+                    </button>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-journal-text display-4 d-block mb-2 text-muted"></i>
+                    <p class="mb-0">No hay registros de auditoría almacenados aún.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("buscadorLogs");
+    const btnLimpiar = document.getElementById("btnLimpiarLogs");
+    const btnReset = document.getElementById("btnRestablecerLogs");
+    const todasLasFilas = Array.from(document.querySelectorAll(".fila-log"));
+    const sinRes = document.getElementById("sinResultadosLogs");
+    const contador = document.getElementById("contadorLogsVisibles");
+    const contadorPaginacionTexto = document.getElementById("contadorPaginacionLogsTexto");
+    const totalLogsPaginacion = document.getElementById("totalLogsPaginacion");
+    const listaBotones = document.getElementById("listaBotonesPaginacionLogs");
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionLogs");
+
+    const REGISTROS_POR_PAGINA = 10;
+    let paginaActual = 1;
+    let filasFiltradas = [...todasLasFilas];
+
+    if (!todasLasFilas.length) return;
+
+    function normalizar(t) {
+        return (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+
+    function filtrarYPaginar(irAPagina = 1) {
+        const q = normalizar(input ? input.value : "");
+
+        filasFiltradas = todasLasFilas.filter(fila => {
+            const user = normalizar(fila.dataset.usuario);
+            const accion = normalizar(fila.dataset.accion);
+            const ip = normalizar(fila.dataset.ip);
+            const detalles = normalizar(fila.dataset.detalles);
+            return !q || user.includes(q) || accion.includes(q) || ip.includes(q) || detalles.includes(q);
+        });
+
+        const totalRegistros = filasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalRegistros / REGISTROS_POR_PAGINA));
+        paginaActual = Math.min(Math.max(1, irAPagina), totalPaginas);
+
+        todasLasFilas.forEach(f => f.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
+
+        for (let i = inicio; i < fin; i++) {
+            filasFiltradas[i].classList.remove("d-none");
+        }
+
+        if (contador) contador.textContent = totalRegistros;
+        if (totalLogsPaginacion) totalLogsPaginacion.textContent = totalRegistros;
+        if (contadorPaginacionTexto) {
+            contadorPaginacionTexto.textContent = totalRegistros > 0 ? `${inicio + 1} - ${fin}` : "0 - 0";
+        }
+        if (sinRes) sinRes.classList.toggle("d-none", totalRegistros > 0);
+        if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", totalRegistros === 0);
+
+        renderizarBotones(totalPaginas);
+    }
+
+    function renderizarBotones(totalPaginas) {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        if (totalPaginas <= 1) {
+            if (contenedorPaginacion) contenedorPaginacion.classList.toggle("d-none", filasFiltradas.length <= 10);
+            return;
+        }
+        if (contenedorPaginacion) contenedorPaginacion.classList.remove("d-none");
+
+        const crearItem = (texto, pag, activo = false, deshabilitado = false) => {
+            const li = document.createElement("li");
+            li.className = `page-item ${activo ? 'active' : ''} ${deshabilitado ? 'disabled' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${texto}</button>`;
+            if (!deshabilitado && !activo) {
+                li.addEventListener("click", () => filtrarYPaginar(pag));
+            }
+            return li;
+        };
+
+        // Anterior
+        listaBotones.appendChild(crearItem("&laquo; Anterior", paginaActual - 1, false, paginaActual === 1));
+
+        if (totalPaginas <= 7) {
+            for (let p = 1; p <= totalPaginas; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+        } else {
+            listaBotones.appendChild(crearItem(1, 1, paginaActual === 1));
+
+            let start = Math.max(2, paginaActual - 1);
+            let end = Math.min(totalPaginas - 1, paginaActual + 1);
+
+            if (start > 2) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            for (let p = start; p <= end; p++) {
+                listaBotones.appendChild(crearItem(p, p, p === paginaActual));
+            }
+
+            if (end < totalPaginas - 1) {
+                const liDots = document.createElement("li");
+                liDots.className = "page-item disabled";
+                liDots.innerHTML = `<span class="page-link">...</span>`;
+                listaBotones.appendChild(liDots);
+            }
+
+            listaBotones.appendChild(crearItem(totalPaginas, totalPaginas, paginaActual === totalPaginas));
+        }
+
+        // Siguiente
+        listaBotones.appendChild(crearItem("Siguiente &raquo;", paginaActual + 1, false, paginaActual === totalPaginas));
+    }
+
+    if (input) input.addEventListener("input", () => filtrarYPaginar(1));
+    function limpiar() {
+        if (input) input.value = "";
+        filtrarYPaginar(1);
+        if (input) input.focus();
+    }
+    if (btnLimpiar) btnLimpiar.addEventListener("click", limpiar);
+    if (btnReset) btnReset.addEventListener("click", limpiar);
+
+    filtrarYPaginar(1);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block titulo %}Panel de Resultados - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DEL PANEL DE RESULTADOS
+     ============================================================================== -->
+<section class="page-header py-5 text-white">
+    <div class="container text-center">
+        <span class="badge bg-emerald mb-2 px-3 py-2 text-uppercase fw-semibold tracking-wider">Toma de decisiones</span>
+        <h1 class="display-5 fw-bold mb-2">Panel de Resultados</h1>
+        <p class="lead text-light-emerald mx-auto mb-0" style="max-width: 680px;">
+            Servicios más solicitados e ingresos generados, calculados directamente
+            desde las facturas registradas en la base de datos.
+        </p>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     TARJETAS RESUMEN
+     ============================================================================== -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 mb-5">
+
+            <!-- Servicio más solicitado por unidades -->
+            <div class="{{ 'col-md-6' if es_cliente else 'col-md-4' }}">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-trophy-fill fs-3 text-warning me-2"></i>
+                            <span class="text-muted text-uppercase small fw-semibold">Más solicitado (unidades)</span>
+                        </div>
+                        <h4 class="fw-bold mb-0">{{ servicio_top }}</h4>
+                    </div>
+                </div>
+            </div>
+
+            {% if not es_cliente %}
+            <!-- Servicio con mayor ingreso -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-graph-up-arrow fs-3 text-success me-2"></i>
+                            <span class="text-muted text-uppercase small fw-semibold">Mayor ingreso</span>
+                        </div>
+                        <h4 class="fw-bold mb-1">{{ servicio_mayor_ingreso }}</h4>
+                        {% if mayor_ingreso_monto and mayor_ingreso_monto > 0 %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace fw-bold">
+                            ${{ '%.2f'|format(mayor_ingreso_monto) }} generados
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <!-- Total de servicios vendidos -->
+            <div class="{{ 'col-md-6' if es_cliente else 'col-md-4' }}">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-box-seam-fill fs-3 text-primary me-2"></i>
+                            <span class="text-muted text-uppercase small fw-semibold">Servicios contratados</span>
+                        </div>
+                        <h4 class="fw-bold mb-0">{{ total_unidades }} unidades</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- Ingreso estimado (Exclusivo Administrador y Gestor) -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-cash-coin fs-3 text-success me-2"></i>
+                            <span class="text-muted text-uppercase small fw-semibold">Ingreso estimado</span>
+                        </div>
+                        <h4 class="fw-bold mb-0">${{ '%.2f'|format(total_ingresos) }}</h4>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- ======================================================================
+             RANKING DE SERVICIOS MÁS SOLICITADOS
+             ====================================================================== -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-bar-chart-line-fill me-2 text-success"></i>
+                    Ranking de servicios más solicitados
+                </h5>
+                {% if ranking %}
+                <small class="text-muted">
+                    Total: <strong class="text-navy">{{ ranking|length }}</strong> servicios analizados
+                </small>
+                {% endif %}
+            </div>
+            <div class="card-body">
+
+                {% if ranking %}
+                    <!-- Tabla con el detalle del ranking -->
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 40px;">#</th>
+                                    <th>Servicio</th>
+                                    <th>Categoría</th>
+                                    {% if not es_cliente %}<th class="text-center">Unidades</th>{% endif %}
+                                    {% if not es_cliente %}
+                                    <th class="text-end">Ingresos</th>
+                                    {% endif %}
+                                    {% if not es_cliente %}<th style="width: 30%;">Demanda (unidades)</th>{% endif %}
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaRanking">
+                                {% for fila in ranking %}
+                                <tr class="fila-ranking">
+                                    <td class="fw-bold text-muted">{{ loop.index }}</td>
+                                    <td class="fw-semibold text-navy">{{ fila.servicio }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ fila.categoria }}</span></td>
+                                    {% if not es_cliente %}<td class="text-center fw-bold">{{ fila.unidades }}</td>{% endif %}
+                                    {% if not es_cliente %}
+                                    <td class="text-end font-monospace fw-semibold text-emerald">${{ '%.2f'|format(fila.ingresos) }}</td>
+                                    {% endif %}
+                                    {% if not es_cliente %}<td>
+                                        <!-- Barra proporcional al servicio más solicitado -->
+                                        <div class="progress" style="height: 18px;">
+                                            {% set porcentaje = (fila.unidades / max_unidades * 100) if max_unidades > 0 else 0 %}
+                                            <div class="progress-bar bg-success"
+                                                 role="progressbar"
+                                                 style="width: {{ porcentaje }}%;"
+                                                 aria-valuenow="{{ fila.unidades }}"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="{{ max_unidades }}">
+                                            </div>
+                                        </div>
+                                    </td>{% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación para ranking si supera 10 registros -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 border-top mt-3 {{ 'd-none' if ranking|length <= 10 else '' }}" id="contenedorPaginacionRanking">
+                        <small class="text-muted">
+                            Mostrando <span id="contadorPaginacionRankingTexto" class="fw-semibold text-navy">1 - {{ 10 if ranking|length > 10 else ranking|length }}</span> de <span class="fw-semibold text-navy">{{ ranking|length }}</span> servicios
+                        </small>
+                        <nav aria-label="Navegación del ranking">
+                            <ul class="pagination pagination-sm mb-0 gap-1" id="listaBotonesPaginacionRanking">
+                                <!-- Botones de paginación generados por JS -->
+                            </ul>
+                        </nav>
+                    </div>
+                {% else %}
+                    <!-- Mensaje cuando todavía no hay facturas registradas -->
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                        <p class="text-muted mb-1">Todavía no hay nombres de servicios para mostrar.</p>
+                        <p class="text-muted small">
+                            Registra facturas con servicios para ver aquí el ranking de los más solicitados.
+                        </p>
+                        {% if not es_cliente %}<a href="{{ url_for('nueva_factura') }}" class="btn btn-verde mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Crear una factura
+                        </a>{% endif %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const filasRanking = Array.from(document.querySelectorAll(".fila-ranking"));
+    const contenedorPaginacion = document.getElementById("contenedorPaginacionRanking");
+    const listaBotones = document.getElementById("listaBotonesPaginacionRanking");
+    const contadorTexto = document.getElementById("contadorPaginacionRankingTexto");
+    const REGISTROS_POR_PAGINA = 10;
+
+    if (!filasRanking.length || filasRanking.length <= REGISTROS_POR_PAGINA) {
+        return;
+    }
+
+    const totalPaginas = Math.ceil(filasRanking.length / REGISTROS_POR_PAGINA);
+    let paginaActual = 1;
+
+    function renderizarPagina(p) {
+        paginaActual = Math.max(1, Math.min(p, totalPaginas));
+        filasRanking.forEach(f => f.classList.add("d-none"));
+
+        const inicio = (paginaActual - 1) * REGISTROS_POR_PAGINA;
+        const fin = Math.min(inicio + REGISTROS_POR_PAGINA, filasRanking.length);
+
+        for (let i = inicio; i < fin; i++) {
+            filasRanking[i].classList.remove("d-none");
+        }
+
+        if (contadorTexto) {
+            contadorTexto.textContent = `${inicio + 1} - ${fin}`;
+        }
+
+        renderizarBotones();
+    }
+
+    function renderizarBotones() {
+        if (!listaBotones) return;
+        listaBotones.innerHTML = "";
+
+        // Botón Anterior
+        const liAnt = document.createElement("li");
+        liAnt.className = `page-item ${paginaActual === 1 ? 'disabled' : ''}`;
+        liAnt.innerHTML = `<button class="page-link" type="button">&laquo; Anterior</button>`;
+        liAnt.addEventListener("click", () => {
+            if (paginaActual > 1) renderizarPagina(paginaActual - 1);
+        });
+        listaBotones.appendChild(liAnt);
+
+        // Páginas numeradas
+        for (let i = 1; i <= totalPaginas; i++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${i === paginaActual ? 'active' : ''}`;
+            li.innerHTML = `<button class="page-link" type="button">${i}</button>`;
+            li.addEventListener("click", () => renderizarPagina(i));
+            listaBotones.appendChild(li);
+        }
+
+        // Botón Siguiente
+        const liSig = document.createElement("li");
+        liSig.className = `page-item ${paginaActual === totalPaginas ? 'disabled' : ''}`;
+        liSig.innerHTML = `<button class="page-link" type="button">Siguiente &raquo;</button>`;
+        liSig.addEventListener("click", () => {
+            if (paginaActual < totalPaginas) renderizarPagina(paginaActual + 1);
+        });
+        listaBotones.appendChild(liSig);
+    }
+
+    renderizarPagina(1);
+});
+</script>
+{% endblock %}

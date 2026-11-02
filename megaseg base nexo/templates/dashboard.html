@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block titulo %}Dashboard Administrativo - MEGASEG CIA. LTDA.{% endblock %}
+
+{% block content %}
+<!-- ==============================================================================
+     ENCABEZADO DE PÁGINA: DASHBOARD DEL SISTEMA
+     ============================================================================== -->
+<section class="page-header py-4 text-white">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge bg-emerald text-white px-3 py-1 mb-2 text-uppercase fw-semibold">
+                    <i class="bi bi-shield-check me-1"></i>Sesión Protegida
+                </span>
+                <h1 class="h3 fw-bold mb-1">Panel de Control General</h1>
+                <p class="text-light-emerald small mb-0">
+                    Bienvenido/a de nuevo, <strong>{{ current_user.usuario }}</strong>. Gestión centralizada de MEGASEG CIA. LTDA.
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if current_user.has_role('Administrador', 'Gestor de proyectos', 'Cliente') %}
+                <a href="{{ url_for('nueva_factura') }}" class="btn btn-verde btn-sm px-3 rounded-pill fw-semibold shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Emitir Documento
+                </a>
+                {% endif %}
+                {% if current_user.has_role('Administrador', 'Gestor de proyectos') %}
+                <a href="{{ url_for('nuevo_cliente') }}" class="btn btn-outline-light btn-sm px-3 rounded-pill fw-semibold">
+                    <i class="bi bi-person-plus me-1"></i>Nuevo Cliente
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==============================================================================
+     MÉTRICAS CUANTITATIVAS DEL SISTEMA (PostgreSQL)
+     ============================================================================== -->
+<section class="py-4">
+    <div class="container">
+        <div class="row g-3">
+            <!-- 1. Clientes Registrados -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-semibold">Clientes Activos</span>
+                            <h2 class="h3 fw-bold text-navy mb-0 mt-1">{{ total_clientes }}</h2>
+                            <small class="text-success fw-semibold"><i class="bi bi-arrow-up-right me-1"></i>Cartera comercial</small>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center bg-light text-navy rounded-circle" style="width: 50px; height: 50px; font-size: 1.4rem;">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        {% if current_user.has_role('Administrador', 'Gestor de proyectos', 'Usuario interno') %}
+                        <a href="{{ url_for('clientes') }}" class="small text-navy text-decoration-none fw-semibold">
+                            Gestionar Clientes <i class="bi bi-chevron-right small"></i>
+                        </a>
+                        {% else %}
+                        <span class="small text-muted">Acceso restringido</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Servicios en Catálogo -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-semibold">Servicios / Productos</span>
+                            <h2 class="h3 fw-bold text-navy mb-0 mt-1">{{ total_servicios }}</h2>
+                            <small class="text-primary fw-semibold"><i class="bi bi-grid-fill me-1"></i>Catálogo activo</small>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center bg-light text-primary rounded-circle" style="width: 50px; height: 50px; font-size: 1.4rem;">
+                            <i class="bi bi-laptop"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        <a href="{{ url_for('servicios') }}" class="small text-primary text-decoration-none fw-semibold">
+                            Gestionar Catálogo <i class="bi bi-chevron-right small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Facturas y Cotizaciones -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-semibold">Documentos Emitidos</span>
+                            <h2 class="h3 fw-bold text-navy mb-0 mt-1">{{ total_facturas }}</h2>
+                            <small class="text-warning fw-semibold"><i class="bi bi-receipt me-1"></i>Facturas y Cotizaciones</small>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center bg-light text-warning rounded-circle" style="width: 50px; height: 50px; font-size: 1.4rem;">
+                            <i class="bi bi-receipt-cutoff"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        {% if current_user.has_role('Administrador', 'Gestor de proyectos', 'Cliente') %}
+                        <a href="{{ url_for('facturacion') }}" class="small text-navy text-decoration-none fw-semibold">
+                            Ir a Facturación <i class="bi bi-chevron-right small"></i>
+                        </a>
+                        {% else %}
+                        <span class="small text-muted">Acceso restringido</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Proveedores Tecnológicos -->
+            <div class="col-xl-3 col-sm-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small text-uppercase fw-semibold">Proveedores</span>
+                            <h2 class="h3 fw-bold text-navy mb-0 mt-1">{{ total_proveedores }}</h2>
+                            <small class="text-info fw-semibold"><i class="bi bi-hdd-network me-1"></i>Infraestructura</small>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center bg-light text-info rounded-circle" style="width: 50px; height: 50px; font-size: 1.4rem;">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
+                        {% if current_user.has_role('Administrador', 'Soporte técnico') %}
+                        <a href="{{ url_for('proveedores') }}" class="small text-info text-decoration-none fw-semibold">
+                            Ver Directorio <i class="bi bi-chevron-right small"></i>
+                        </a>
+                        {% else %}
+                        <span class="small text-muted">Acceso restringido</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================================================
+             ACCESOS DIRECTOS Y ÚLTIMAS ACTIVIDADES
+             ============================================================================== -->
+        <div class="row g-4 mt-2">
+            <!-- Accesos rápidos a CRUDs -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <h2 class="h5 fw-bold text-navy mb-3">Módulos Disponibles</h2>
+                    <p class="text-muted small mb-4">
+                        Accede a las funciones habilitadas según tu rol <strong>({{ current_user.rol_nombre }})</strong>:
+                    </p>
+
+                    <div class="list-group list-group-flush gap-2">
+                        {% if current_user.has_role('Administrador', 'Gestor de proyectos', 'Usuario interno') %}
+                        <a href="{{ url_for('clientes') }}" class="list-group-item list-group-item-action border rounded-3 d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-people text-navy fs-5"></i>
+                                <div>
+                                    <h3 class="h6 mb-0 fw-semibold text-navy">Clientes</h3>
+                                    <small class="text-muted">Cartera comercial de clientes</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        {% endif %}
+
+                        <a href="{{ url_for('servicios') }}" class="list-group-item list-group-item-action border rounded-3 d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-grid text-primary fs-5"></i>
+                                <div>
+                                    <h3 class="h6 mb-0 fw-semibold text-navy">Servicios / Productos</h3>
+                                    <small class="text-muted">Catálogo con categorías y precios</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+
+                        {% if current_user.has_role('Administrador', 'Gestor de proyectos', 'Cliente') %}
+                        <a href="{{ url_for('facturacion') }}" class="list-group-item list-group-item-action border rounded-3 d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-receipt text-warning fs-5"></i>
+                                <div>
+                                    <h3 class="h6 mb-0 fw-semibold text-navy">Facturación</h3>
+                                    <small class="text-muted">Documentos y cotizaciones</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.has_role('Administrador', 'Soporte técnico') %}
+                        <a href="{{ url_for('proveedores') }}" class="list-group-item list-group-item-action border rounded-3 d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-truck text-info fs-5"></i>
+                                <div>
+                                    <h3 class="h6 mb-0 fw-semibold text-navy">Proveedores</h3>
+                                    <small class="text-muted">Infraestructura y soporte técnico</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.has_role('Administrador', 'Gestor de proyectos') %}
+                        <a href="{{ url_for('estadisticas') }}" class="list-group-item list-group-item-action border rounded-3 d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-bar-chart-line text-success fs-5"></i>
+                                <div>
+                                    <h3 class="h6 mb-0 fw-semibold text-navy">Panel Estadístico</h3>
+                                    <small class="text-muted">Consultas e indicadores</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if current_user.is_admin() %}
+                        <a href="{{ url_for('admin_usuarios') }}" class="list-group-item list-group-item-action border rounded-3 d-flex align-items-center justify-content-between p-3 bg-light">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-shield-shaded text-danger fs-5"></i>
+                                <div>
+                                    <h3 class="h6 mb-0 fw-semibold text-navy">Usuarios y Aprobaciones</h3>
+                                    <small class="text-muted">Control de roles y nuevos administradores</small>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimas Facturas con consulta JOIN -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="h5 fw-bold text-navy mb-0">Últimos Documentos Registrados</h2>
+                            <small class="text-muted">Consulta relacional entre facturacion, clientes y estados</small>
+                        </div>
+                        <a href="{{ url_for('facturacion') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            Ver Todas
+                        </a>
+                    </div>
+
+                    {% if ultimas_facturas %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr class="small text-muted text-uppercase">
+                                        <th>Número</th>
+                                        <th>Cliente</th>
+                                        <th>Fecha</th>
+                                        <th>Monto</th>
+                                        <th>Estado</th>
+                                        <th class="text-end">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in ultimas_facturas %}
+                                        <tr>
+                                            <td class="fw-semibold text-navy">{{ doc.numero }}</td>
+                                            <td>{{ doc.cliente_nombre }}</td>
+                                            <td class="text-muted small">{{ doc.fecha }}</td>
+                                            <td class="fw-bold text-navy">${{ "%.2f"|format(doc.monto) }}</td>
+                                            <td>
+                                                <span class="badge {% if doc.estado_nombre == 'Pagada' %}bg-success{% elif doc.estado_nombre == 'Pendiente' %}bg-warning text-dark{% else %}bg-secondary{% endif %} rounded-pill px-2 py-1">
+                                                    {{ doc.estado_nombre }}
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ url_for('ver_comprobante', numero=doc.numero) }}" class="btn btn-sm btn-light border rounded-pill" title="Ver comprobante">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-receipt display-4 d-block mb-2 text-muted"></i>
+                            <p class="mb-0">Aún no hay facturas o cotizaciones registradas en la base de datos.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
